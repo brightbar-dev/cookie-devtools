@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="popup.css">
   <title>Cookie DevTools</title>
 </head>
 <body>
@@ -11,8 +10,8 @@
     <header>
       <h1>Cookie DevTools</h1>
       <div class="header-actions">
-        <button id="btn-theme" class="icon-btn" title="Toggle dark mode">◐</button>
-        <button id="btn-settings" class="icon-btn" title="Settings">⚙</button>
+        <button id="btn-theme" class="icon-btn" title="Toggle dark mode">&#9684;</button>
+        <button id="btn-settings" class="icon-btn" title="Settings">&#9881;</button>
       </div>
     </header>
 
@@ -28,7 +27,7 @@
         <input type="text" id="search" placeholder="Filter cookies..." autocomplete="off">
         <div class="toolbar-actions">
           <button id="btn-add" class="action-btn" title="Add cookie">+ Add</button>
-          <button id="btn-export" class="action-btn" title="Export">Export ▾</button>
+          <button id="btn-export" class="action-btn" title="Export">Export &#9662;</button>
           <button id="btn-delete-all" class="action-btn danger" title="Delete all for this site">Clear</button>
         </div>
       </div>
@@ -40,7 +39,7 @@
     <!-- Monitor Tab -->
     <section id="tab-monitor" class="tab-content">
       <div class="toolbar">
-        <span class="monitor-status" id="monitor-status">● Monitoring</span>
+        <span class="monitor-status" id="monitor-status">&#9679; Monitoring</span>
         <button id="btn-clear-log" class="action-btn">Clear Log</button>
       </div>
       <div id="change-log" class="change-log"></div>
@@ -97,10 +96,10 @@
     </div>
 
     <footer>
-      <span class="version">v0.1.0</span>
+      <span class="version">v0.2.0</span>
       <span id="cookie-count" class="cookie-count"></span>
     </footer>
   </div>
-  <script src="popup.js"></script>
+  <script type="module" src="./main.ts"></script>
 </body>
 </html>

@@ -1,0 +1,22 @@
+{
+  "name": "cookie-devtools",
+  "version": "0.2.0",
+  "description": "Developer-focused cookie manager with real-time monitoring, environment profiles, and export.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt --browser firefox",
+    "build": "wxt build",
+    "build:firefox": "wxt build --browser firefox",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip --browser firefox",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9",
+    "wxt": "^0.20.5"
+  }
+}

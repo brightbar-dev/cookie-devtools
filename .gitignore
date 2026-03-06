@@ -9,8 +9,12 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Node (testing tools)
+# Node
 node_modules/
+
+# WXT
+.wxt/
+.output/
 
 # Build artifacts
 *.zip

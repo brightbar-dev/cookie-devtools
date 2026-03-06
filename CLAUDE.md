@@ -1,34 +1,45 @@
-# Cookie DevTools — Chrome Extension
+# Cookie DevTools — Browser Extension
 
 ## What This Is
 Developer-focused cookie manager with real-time monitoring, environment profiles, and export to curl/wget. Targets the ~1M+ users displaced by EditThisCookie's removal plus developers who need more than basic cookie editing.
 
+Built with [WXT](https://wxt.dev/) — builds for Chrome (MV3) and Firefox (MV2) from one codebase.
+
 ## Architecture
-- **background.js** — Service worker handling all cookie operations via `chrome.cookies` API. Manages CRUD, monitors changes via `chrome.cookies.onChanged`, stores profiles, and handles export formatting. This is the core — all cookie logic lives here.
-- **popup/** — Browser action popup with tabbed UI (Cookies, Monitor, Profiles). Communicates with background.js via `chrome.runtime.sendMessage`.
-  - `popup.html` — Tab layout with cookie list, monitor feed, profiles panel
-  - `popup.js` — UI logic, event handlers, DOM manipulation
-  - `popup.css` — Styles including dark/light theme variables
-- **options/** — Options page for preferences (theme, default tab, etc.)
-- **icons/** — Extension icons (16, 48, 128px)
+- **entrypoints/background.ts** — Service worker. Cookie CRUD via `browser.cookies` API, change monitoring via `browser.cookies.onChanged`, profile management, export formatting. All cookie logic lives here.
+- **entrypoints/popup/** — Browser action popup with tabbed UI (Cookies, Monitor, Profiles). Cookie editor modal, export dropdown, dark/light theme.
+- **entrypoints/options/** — Options page for theme, max log entries, data clearing.
+- **utils/cookies.ts** — Shared utility functions (export formats, escaping, filtering, badges, URL construction). Exported for testing.
+- **public/icon-{16,48,128}.png** — Extension icons.
 
 ## Key Implementation Details
-- Popup needs domain context to show relevant cookies. When opened standalone (not from toolbar), `currentDomain`/`currentUrl` must be set manually and `loadCookies()` re-called.
-- Monitor uses `chrome.cookies.onChanged` with cause tracking (explicit, expired, evicted, overwritten).
-- Profiles are stored in `chrome.storage.local` as named cookie snapshots.
-- Export formats: JSON (full attributes), Netscape cookie file, curl -b command, raw Cookie header.
-- Theme toggle via `btn-theme` element, auto-detects `prefers-color-scheme`.
-- Tab switching uses `.tab` / `.tab-btn` class selectors.
+- Popup gets domain context from active tab, sends messages to background for all cookie operations
+- Monitor uses `browser.cookies.onChanged` with cause tracking (explicit, expired, evicted, overwritten)
+- Profiles stored in `browser.storage.local` as named cookie snapshots
+- Export formats: JSON, Netscape cookie file, curl command, raw Cookie header
+- Theme toggle with auto-detect via `prefers-color-scheme`
+- Uses `browser.*` API (WXT polyfill) for cross-browser compatibility
 
-## Running Tests
+## Commands
 ```bash
-node tests/test-core.mjs
+npm run dev          # Dev mode with HMR (Chrome)
+npm run dev:firefox  # Dev mode (Firefox)
+npm run build        # Production build (Chrome)
+npm run build:firefox # Production build (Firefox)
+npm run zip          # Build + zip for store submission
+npm run test         # Run Vitest tests
+npm run test:watch   # Watch mode
 ```
-- 206 unit tests covering cookie parsing, export formats, profile management, monitoring
+
+## Testing
+```bash
+npm test
+```
+- 63 unit tests via Vitest + WXT testing plugin
+- Tests cover: export formats, HTML escaping, cookie URL construction, expiry formatting, filtering, badge generation, SameSite labels, cookie data building, cause map, log truncation
 
 ## Conventions
-- Manifest V3, no external dependencies
-- Version: semver starting at 0.x (1.x = production-ready)
+- WXT framework with vanilla TypeScript (no UI framework)
+- Version: semver, 0.2.x (WXT rewrite)
 - Requires `cookies`, `storage`, `activeTab`, `tabs` permissions and `<all_urls>` host permission
-- Privacy policy must be kept current with any permission changes
-- Do NOT add Claude/AI as co-author or contributor in commits, PRs, or code
+- Do NOT add Claude/AI as co-author or contributor
