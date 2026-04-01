@@ -1,0 +1,19 @@
+{
+  "extension_id": "pgohmdladleifefhobididhhlmjcknjl",
+  "category": "Developer Tools",
+  "language": "English (United States)",
+  "homepage_url": "https://brightbar.dev/products/cookie-devtools/",
+  "support_url": "https://github.com/brightbar-dev/cookie-devtools/issues",
+  "privacy_policy_url": "https://brightbar.dev/privacy/cookie-devtools",
+  "description": "Cookie DevTools is a developer-focused cookie manager built for debugging, testing, and environment switching.\n\nUnlike basic cookie editors, Cookie DevTools gives you the tools developers actually need: a real-time monitor that shows cookie changes as they happen, environment profiles to save and switch between cookie states, and one-click export to curl, cookie files, or raw headers.\n\nFEATURES\n- View, add, edit, and delete cookies for the current site\n- Real-time cookie change monitor with cause tracking (explicit, expired, evicted, overwritten)\n- Environment profiles — save and restore named cookie snapshots\n- Export to JSON, cookie file (curl/wget), curl command, or Cookie header string\n- Visual attribute badges: Secure, HttpOnly, SameSite, Session\n- Search and filter across cookie names, values, and domains\n- Dark mode with system preference auto-detection\n- No tracking, no ads, no data collection\n\nPERFECT FOR\n- Debugging authentication flows\n- Switching between dev/staging/prod cookie environments\n- Generating curl commands with session cookies\n- Monitoring how websites set and modify cookies\n- QA testing cookie behavior across environments",
+  "single_purpose": "View, edit, and manage browser cookies for the current website with real-time change monitoring, environment profiles for switching between dev/staging/prod, and developer export formats (JSON, curl, cookie file, header string).",
+  "permission_justifications": {
+    "cookies": "Core functionality. The extension reads, creates, edits, and deletes cookies via the chrome.cookies API, and monitors real-time cookie changes via chrome.cookies.onChanged to show developers when and why cookies change.",
+    "storage": "Used to save user preferences (theme, default tab) and environment profiles — named cookie snapshots that let developers quickly switch between different cookie states. All data is stored locally on the user's device.",
+    "activeTab": "Used to determine the current tab's URL and domain so the extension can display cookies relevant to the site the user is currently viewing.",
+    "tabs": "Used to get the active tab's URL and domain for cookie filtering. Required to show the correct cookies for the current site when the popup opens.",
+    "host_permissions": "Cookie management requires host permissions for the domains whose cookies are being accessed. Since developers need to manage cookies on any website they're working with, broad host permission is required. The extension only accesses cookies — it does not read page content, inject scripts, or monitor browsing activity."
+  },
+  "remote_code": false,
+  "mature_content": false
+}
