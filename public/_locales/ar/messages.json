@@ -1,0 +1,8 @@
+{
+  "appName": {
+    "message": "Cookie DevTools"
+  },
+  "appDescription": {
+    "message": "مدير كوكيز للمطورين مع مراقبة فورية وملفات بيئة وتصدير إلى curl/wget. بدون تتبع أو إعلانات."
+  }
+}

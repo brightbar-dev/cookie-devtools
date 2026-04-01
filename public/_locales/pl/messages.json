@@ -1,0 +1,8 @@
+{
+  "appName": {
+    "message": "Cookie DevTools"
+  },
+  "appDescription": {
+    "message": "Menedżer ciasteczek dla programistów z monitoringiem na żywo, profilami środowisk i eksportem do curl/wget. Bez śledzenia i reklam."
+  }
+}

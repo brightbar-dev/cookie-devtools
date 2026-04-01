@@ -1,0 +1,8 @@
+{
+  "appName": {
+    "message": "Cookie DevTools"
+  },
+  "appDescription": {
+    "message": "개발자용 쿠키 관리 도구. 실시간 모니터링, 환경 프로필, curl/wget 내보내기 지원. 추적 없음, 광고 없음."
+  }
+}

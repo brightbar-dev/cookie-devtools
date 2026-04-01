@@ -1,0 +1,8 @@
+{
+  "appName": {
+    "message": "Cookie DevTools"
+  },
+  "appDescription": {
+    "message": "Менеджер cookie для розробників: моніторинг у реальному часі, профілі середовищ та експорт у curl/wget. Без відстеження та реклами."
+  }
+}

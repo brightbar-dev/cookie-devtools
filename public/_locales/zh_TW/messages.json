@@ -1,0 +1,8 @@
+{
+  "appName": {
+    "message": "Cookie DevTools"
+  },
+  "appDescription": {
+    "message": "開發者Cookie管理工具，支援即時監控、環境設定檔和匯出為curl/wget指令。無追蹤，無廣告。"
+  }
+}

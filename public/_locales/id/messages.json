@@ -1,0 +1,8 @@
+{
+  "appName": {
+    "message": "Cookie DevTools"
+  },
+  "appDescription": {
+    "message": "Pengelola cookie untuk developer dengan pemantauan real-time, profil lingkungan, dan ekspor curl/wget. Tanpa pelacakan, tanpa iklan."
+  }
+}

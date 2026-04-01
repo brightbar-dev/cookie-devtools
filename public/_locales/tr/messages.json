@@ -1,0 +1,8 @@
+{
+  "appName": {
+    "message": "Cookie DevTools"
+  },
+  "appDescription": {
+    "message": "Geliştiriciler için çerez yöneticisi: gerçek zamanlı izleme, ortam profilleri ve curl/wget dışa aktarma. Takip ve reklam yok."
+  }
+}

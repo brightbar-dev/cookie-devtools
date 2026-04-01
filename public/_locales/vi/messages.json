@@ -1,0 +1,8 @@
+{
+  "appName": {
+    "message": "Cookie DevTools"
+  },
+  "appDescription": {
+    "message": "Quản lý cookie cho lập trình viên: giám sát thời gian thực, hồ sơ môi trường, xuất curl/wget. Không theo dõi, không quảng cáo."
+  }
+}
