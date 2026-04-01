@@ -40,6 +40,6 @@ npm test
 
 ## Conventions
 - WXT framework with vanilla TypeScript (no UI framework)
-- Version: semver, 0.2.x (WXT rewrite)
+- Version: semver, 0.3.x (CWS-submitted)
 - Requires `cookies`, `storage`, `activeTab`, `tabs` permissions and `<all_urls>` host permission
 - Do NOT add Claude/AI as co-author or contributor
