@@ -37,7 +37,7 @@ Developer-focused cookie manager for Chrome with real-time monitoring, environme
 *Coming soon*
 
 ### From GitHub Release
-1. Download the latest `cookie-devtools.zip` from [Releases](https://github.com/kendocode/cookie-devtools/releases)
+1. Download the latest `cookie-devtools.zip` from [Releases](https://github.com/brightbar-dev/cookie-devtools/releases)
 2. Unzip into a folder
 3. Open `chrome://extensions/` and enable "Developer mode"
 4. Click "Load unpacked" and select the unzipped folder
