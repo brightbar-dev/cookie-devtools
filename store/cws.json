@@ -10,8 +10,7 @@
   "permission_justifications": {
     "cookies": "Core functionality. The extension reads, creates, edits, and deletes cookies via the chrome.cookies API, and monitors real-time cookie changes via chrome.cookies.onChanged to show developers when and why cookies change.",
     "storage": "Used to save user preferences (theme, default tab) and environment profiles — named cookie snapshots that let developers quickly switch between different cookie states. All data is stored locally on the user's device.",
-    "activeTab": "Used to determine the current tab's URL and domain so the extension can display cookies relevant to the site the user is currently viewing.",
-    "tabs": "Used to get the active tab's URL and domain for cookie filtering. Required to show the correct cookies for the current site when the popup opens.",
+    "activeTab": "Used to read the current tab's URL and domain so the extension can display the cookies relevant to the site the user is viewing. This is the only tab data the extension reads; it does not enumerate tabs, track navigation, or access browsing history.",
     "host_permissions": "Cookie management requires host permissions for the domains whose cookies are being accessed. Since developers need to manage cookies on any website they're working with, broad host permission is required. The extension only accesses cookies — it does not read page content, inject scripts, or monitor browsing activity."
   },
   "remote_code": false,

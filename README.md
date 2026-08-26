@@ -34,7 +34,18 @@ Developer-focused cookie manager for Chrome with real-time monitoring, environme
 ## Installation
 
 ### From Chrome Web Store
-*Coming soon*
+**[Install Cookie DevTools from the Chrome Web Store](https://chromewebstore.google.com/detail/cookie-devtools/pgohmdladleifefhobididhhlmjcknjl)**
+
+<!-- This line said "*Coming soon*" until 2026-08-26, by which point the listing had
+     been live long enough to accumulate users and a review. Verified before editing by
+     fetching the public store page: HTTP 200, canonical URL
+     chromewebstore.google.com/detail/cookie-devtools/pgohmdladleifefhobididhhlmjcknjl.
+     KEEPING THIS TRUE: the extension id is the durable fact and it lives in
+     store/cws.json, which is also what the CWS publish flow reads — so the link above
+     cannot rot independently of the thing it points at. Anything version- or
+     count-shaped (users, rating, "latest version") is deliberately NOT stated here:
+     it would be stale within a week and nothing regenerates this file. The store page
+     itself is where those live. -->
 
 ### From GitHub Release
 1. Download the latest `cookie-devtools.zip` from [Releases](https://github.com/brightbar-dev/cookie-devtools/releases)
