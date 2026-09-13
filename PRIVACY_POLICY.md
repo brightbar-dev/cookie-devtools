@@ -8,7 +8,7 @@ Cookie DevTools does **not** collect, transmit, or share any user data. All data
 ## Permissions Explained
 - **cookies**: Required to read, create, edit, and delete browser cookies (the core functionality).
 - **storage**: Used to save your preferences, cookie profiles, and change log locally on your device.
-- **activeTab / tabs**: Used to detect the current tab's URL so we can show cookies for the site you're viewing.
+- **activeTab**: Used to detect the current tab's URL so we can show cookies for the site you're viewing. (The broader `tabs` permission was removed — `activeTab` plus the `<all_urls>` host permission already cover this.)
 - **host_permissions (<all_urls>)**: Required by the chrome.cookies API to access cookies across all domains.
 
 ## Data Storage
