@@ -1,4 +1,5 @@
 // The page a cookie view works on.
+import { t } from './i18n';
 
 export interface PageTarget {
   /** Origin + path: what cookies.getAll({url}) matches against. */
@@ -33,25 +34,25 @@ const BROWSER_SCHEMES = new Set([
 /** Why there is nothing to show when a page has no cookie target, for the empty state. */
 export function noTargetReason(raw: string | undefined | null): { title: string; detail: string } {
   if (!raw) {
-    return { title: 'No page open', detail: 'Open a website in this window to see its cookies.' };
+    return { title: t('targetNoPageTitle'), detail: t('targetNoPageDetail') };
   }
   let protocol: string;
   try {
     protocol = new URL(raw).protocol;
   } catch {
-    return { title: 'Not a website', detail: 'Open a website to see its cookies.' };
+    return { title: t('targetNotWebsiteTitle'), detail: t('targetNotWebsiteDetail') };
   }
   if (BROWSER_SCHEMES.has(protocol)) {
     return {
-      title: 'Browser page',
-      detail: 'Browser pages such as settings, extensions and the new tab page have no cookies. Open a website to see its cookies.',
+      title: t('targetBrowserPageTitle'),
+      detail: t('targetBrowserPageDetail'),
     };
   }
   if (protocol === 'file:') {
     return {
-      title: 'Local file',
-      detail: 'Files opened from your computer don’t use cookies. Serve the file from localhost to work with its cookies.',
+      title: t('targetLocalFileTitle'),
+      detail: t('targetLocalFileDetail'),
     };
   }
-  return { title: 'Not a website', detail: 'Only http and https pages have cookies.' };
+  return { title: t('targetNotWebsiteTitle'), detail: t('targetOnlyHttpDetail') };
 }

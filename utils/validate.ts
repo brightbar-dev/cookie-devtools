@@ -1,5 +1,6 @@
 // Pre-submit validation for the cookie editor. Every error mirrors a write the browser rejects,
 // verified against chrome.cookies.set in Chrome for Testing 151.
+import { t } from './i18n';
 
 export type Severity = 'error' | 'warning' | 'confirm';
 export type Field = 'name' | 'value' | 'domain' | 'path' | 'expires' | 'sameSite';
@@ -54,57 +55,57 @@ export function validateCookie(draft: CookieDraft, opts: ValidateOptions): Issue
   const { name, value, path } = draft;
   const domain = draft.domain.trim();
 
-  if (!name && !opts.allowEmptyName) add('error', 'name', 'required', 'Name is required.');
-  if (CONTROL_CHARS.test(name)) add('error', 'name', 'name-control', 'Name can’t contain tabs, line breaks or other control characters.');
-  if (/[;=]/.test(name)) add('error', 'name', 'name-separator', 'Name can’t contain “;” or “=”.');
-  if (name && name !== name.trim()) add('warning', 'name', 'name-whitespace', 'Name starts or ends with a space.');
+  if (!name && !opts.allowEmptyName) add('error', 'name', 'required', t('validateNameRequired'));
+  if (CONTROL_CHARS.test(name)) add('error', 'name', 'name-control', t('validateNameControl'));
+  if (/[;=]/.test(name)) add('error', 'name', 'name-separator', t('validateNameSeparator'));
+  if (name && name !== name.trim()) add('warning', 'name', 'name-whitespace', t('validateNameWhitespace'));
 
-  if (CONTROL_CHARS.test(value)) add('error', 'value', 'value-control', 'Value can’t contain line breaks or other control characters.');
-  if (value.includes(';')) add('error', 'value', 'value-semicolon', 'Value can’t contain “;”. URL-encode it as %3B.');
+  if (CONTROL_CHARS.test(value)) add('error', 'value', 'value-control', t('validateValueControl'));
+  if (value.includes(';')) add('error', 'value', 'value-semicolon', t('validateValueSemicolon'));
 
   const size = cookieSize(name, value);
   if (size > MAX_NAME_VALUE_BYTES) {
-    add('error', 'value', 'too-large', `Name + value is ${size} bytes; browsers reject cookies over ${MAX_NAME_VALUE_BYTES}.`);
+    add('error', 'value', 'too-large', t('validateTooLarge', size, MAX_NAME_VALUE_BYTES));
   } else if (size > SIZE_WARNING_BYTES) {
-    add('warning', 'value', 'near-limit', `Name + value is ${size} of ${MAX_NAME_VALUE_BYTES} bytes — close to the limit.`);
+    add('warning', 'value', 'near-limit', t('validateNearLimit', size, MAX_NAME_VALUE_BYTES));
   }
 
   if (!domain) {
-    add('error', 'domain', 'required', 'Domain is required.');
+    add('error', 'domain', 'required', t('validateDomainRequired'));
   } else if (/[\s/:?#@]/.test(domain)) {
-    add('error', 'domain', 'domain-format', 'Domain must be a host name like example.com — no scheme, port or path.');
+    add('error', 'domain', 'domain-format', t('validateDomainFormat'));
   } else if (byteLength(domain) > MAX_ATTRIBUTE_BYTES) {
-    add('error', 'domain', 'domain-length', `Domain is longer than ${MAX_ATTRIBUTE_BYTES} bytes.`);
+    add('error', 'domain', 'domain-length', t('validateDomainLength', MAX_ATTRIBUTE_BYTES));
   }
 
-  if (!path.startsWith('/')) add('error', 'path', 'path-format', 'Path must start with “/”.');
-  else if (byteLength(path) > MAX_ATTRIBUTE_BYTES) add('error', 'path', 'path-length', `Path is longer than ${MAX_ATTRIBUTE_BYTES} bytes.`);
+  if (!path.startsWith('/')) add('error', 'path', 'path-format', t('validatePathFormat'));
+  else if (byteLength(path) > MAX_ATTRIBUTE_BYTES) add('error', 'path', 'path-length', t('validatePathLength', MAX_ATTRIBUTE_BYTES));
 
   if (draft.sameSite === 'no_restriction' && !draft.secure) {
-    add('error', 'sameSite', 'samesite-none-insecure', 'SameSite=None requires Secure.');
+    add('error', 'sameSite', 'samesite-none-insecure', t('validateSameSiteNoneInsecure'));
   }
   if (draft.partitioned && !draft.secure) {
-    add('error', 'sameSite', 'partitioned-insecure', 'Partitioned cookies must be Secure.');
+    add('error', 'sameSite', 'partitioned-insecure', t('validatePartitionedInsecure'));
   }
 
   // Cookie prefixes are matched case-insensitively.
   const lower = name.toLowerCase();
   if (lower.startsWith('__secure-') && !draft.secure) {
-    add('error', 'name', 'secure-prefix', 'A __Secure- cookie must be Secure.');
+    add('error', 'name', 'secure-prefix', t('validateSecurePrefix'));
   }
   if (lower.startsWith('__host-')) {
-    if (!draft.secure) add('error', 'name', 'host-prefix-secure', 'A __Host- cookie must be Secure.');
-    if (path !== '/') add('error', 'path', 'host-prefix-path', 'A __Host- cookie must have Path “/”.');
-    if (!draft.hostOnly) add('error', 'domain', 'host-prefix-domain', 'A __Host- cookie must be host-only (no Domain attribute).');
+    if (!draft.secure) add('error', 'name', 'host-prefix-secure', t('validateHostPrefixSecure'));
+    if (path !== '/') add('error', 'path', 'host-prefix-path', t('validateHostPrefixPath'));
+    if (!draft.hostOnly) add('error', 'domain', 'host-prefix-domain', t('validateHostPrefixDomain'));
   }
 
   if (!draft.session) {
     if (draft.expirationDate === null) {
-      add('error', 'expires', 'expiry-missing', 'Choose an expiry time, or tick Session.');
+      add('error', 'expires', 'expiry-missing', t('validateExpiryMissing'));
     } else if (draft.expirationDate <= opts.nowSeconds) {
-      add('confirm', 'expires', 'expiry-past', 'This time is in the past, so saving deletes the cookie.');
+      add('confirm', 'expires', 'expiry-past', t('validateExpiryPast'));
     } else if (draft.expirationDate - opts.nowSeconds > MAX_EXPIRY_DAYS * 86400) {
-      add('warning', 'expires', 'expiry-capped', `Browsers cap expiry at ${MAX_EXPIRY_DAYS} days from now; it will be shortened.`);
+      add('warning', 'expires', 'expiry-capped', t('validateExpiryCapped', MAX_EXPIRY_DAYS));
     }
   }
 

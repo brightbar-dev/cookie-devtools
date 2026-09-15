@@ -1,10 +1,11 @@
 // Import dialog: paste, open or drop an export, preview what will happen, then apply.
-import { planImport, compareWithExisting, FORMAT_LABELS } from '@/utils/importer';
+import { planImport, compareWithExisting, formatLabel } from '@/utils/importer';
 import type { ImportPlan } from '@/utils/importer';
 import { escapeHtml, domainAppliesToHost } from '@/utils/cookies';
 import type { CookieLike } from '@/utils/cookies';
 import type { WriteReport } from '@/utils/messages';
-import { el, send, plural } from './dom';
+import { t, tp } from '@/utils/i18n';
+import { el, send } from './dom';
 
 export interface ImportHost {
   /** The page cookies without a domain of their own are imported for. */
@@ -79,7 +80,7 @@ export function openImportDialog() {
 
 async function loadFile(file: File) {
   if (file.size > MAX_FILE_BYTES) {
-    el('import-preview').innerHTML = `<p class="import-error">${escapeHtml(file.name)} is larger than 5 MB.</p>`;
+    el('import-preview').innerHTML = `<p class="import-error">${escapeHtml(t('importFileTooLarge', file.name))}</p>`;
     return;
   }
   textArea().value = await file.text();
@@ -89,10 +90,10 @@ async function loadFile(file: File) {
 
 function flags(c: CookieLike): string {
   const parts: string[] = [];
-  if (c.secure) parts.push('Secure');
-  if (c.httpOnly) parts.push('HttpOnly');
-  parts.push(c.session ? 'Session' : 'Persistent');
-  if (c.partitionKey?.topLevelSite) parts.push('Partitioned');
+  if (c.secure) parts.push(t('attrSecure'));
+  if (c.httpOnly) parts.push(t('attrHttpOnly'));
+  parts.push(c.session ? t('attrSession') : t('attrPersistent'));
+  if (c.partitionKey?.topLevelSite) parts.push(t('attrPartitioned'));
   return parts.join(' · ');
 }
 
@@ -102,10 +103,10 @@ function refresh() {
   const url = host.url();
   plan = planImport(text, { url, nowSeconds: Date.now() / 1000 });
 
-  el('import-format').textContent = text.trim() ? FORMAT_LABELS[plan.format] : '';
+  el('import-format').textContent = text.trim() ? formatLabel(plan.format) : '';
   const button = applyButton();
   button.disabled = plan.cookies.length === 0;
-  button.textContent = plan.cookies.length ? `Import ${plural(plan.cookies.length, 'cookie')}` : 'Import';
+  button.textContent = plan.cookies.length ? tp('importApply', plan.cookies.length) : t('actionImport');
 
   const preview = el('import-preview');
   if (plan.error) {
@@ -114,9 +115,9 @@ function refresh() {
   }
 
   const { create, replace } = compareWithExisting(plan.cookies, host.existing());
-  const summary = [`${create} will be created`];
-  if (replace) summary.push(`${replace} will replace existing`);
-  summary.push(`${plan.skipped.length} skipped`);
+  const summary = [t('importWillCreate', create)];
+  if (replace) summary.push(t('importWillReplace', replace));
+  summary.push(t('importSkippedCount', plan.skipped.length));
 
   let pageHost = '';
   try {
@@ -126,14 +127,15 @@ function refresh() {
   }
   const elsewhere = pageHost ? plan.cookies.filter((c) => !domainAppliesToHost(c.domain, pageHost)) : [];
   const otherSites = [...new Set(elsewhere.map((c) => c.domain.replace(/^\./, '')))];
+  const sites = otherSites.slice(0, 3).join(', ') + (otherSites.length > 3 ? '…' : '');
   const note = elsewhere.length
-    ? `<p class="import-note">${plural(elsewhere.length, 'cookie')} ${elsewhere.length === 1 ? 'belongs' : 'belong'} to other sites (${escapeHtml(otherSites.slice(0, 3).join(', '))}${otherSites.length > 3 ? '…' : ''}) and won’t appear in this site’s list.</p>`
+    ? `<p class="import-note">${escapeHtml(tp('importOtherSites', elsewhere.length, sites))}</p>`
     : '';
 
   const rows = plan.cookies.map((c) => `
     <li>
       <span class="imp-mark" aria-hidden="true">+</span>
-      <span class="imp-name" title="${escapeHtml(c.name)}">${escapeHtml(c.name) || '(no name)'}</span>
+      <span class="imp-name" title="${escapeHtml(c.name)}">${escapeHtml(c.name) || escapeHtml(t('noName'))}</span>
       <span class="imp-domain">${escapeHtml(c.domain + (c.path !== '/' ? c.path : ''))}</span>
       <span class="imp-detail">${escapeHtml(flags(c))}</span>
     </li>`).join('');
@@ -141,7 +143,7 @@ function refresh() {
     <li class="is-skipped">
       <span class="imp-mark" aria-hidden="true">–</span>
       <span class="imp-name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</span>
-      <span class="imp-detail">skipped: ${escapeHtml(s.reason)}</span>
+      <span class="imp-detail">${escapeHtml(t('importSkippedReason', s.reason))}</span>
     </li>`).join('');
 
   preview.innerHTML = `
@@ -168,12 +170,12 @@ async function apply() {
   }
   applied = true;
   button.disabled = false;
-  button.textContent = 'Done';
+  button.textContent = t('importDone');
 
-  const summary = [`Imported ${report.written.length}`];
-  if (report.failed.length) summary.push(`${report.failed.length} failed`);
+  const summary = [t('importImported', report.written.length)];
+  if (report.failed.length) summary.push(t('importFailedCount', report.failed.length));
   const skippedCount = plan.skipped.length + report.expired.length;
-  if (skippedCount) summary.push(`${skippedCount} skipped`);
+  if (skippedCount) summary.push(t('importSkippedCount', skippedCount));
 
   const failed = report.failed.map((f) => `
     <li class="is-failed">

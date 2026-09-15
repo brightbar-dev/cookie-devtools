@@ -1,5 +1,6 @@
 // Read-only views of a cookie value: URL-decoded, Base64/Base64URL, JSON and JWT.
 // JWTs are decoded only — the signature is never verified.
+import { t } from './i18n';
 
 export interface JwtTime {
   claim: 'exp' | 'iat' | 'nbf';
@@ -34,7 +35,8 @@ const RELATIVE_UNITS: Array<[Intl.RelativeTimeFormatUnit, number, number]> = [
   ['year', 365 * 86400, Number.POSITIVE_INFINITY],
 ];
 
-export function formatRelative(targetSeconds: number, nowSeconds: number, locale = 'en'): string {
+/** "in 3 days", "2 hours ago" — in the language of the UI strings (localeCode), not the browser's. */
+export function formatRelative(targetSeconds: number, nowSeconds: number, locale = t('localeCode')): string {
   const diff = targetSeconds - nowSeconds;
   const fmt = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
   for (const [unit, size, carry] of RELATIVE_UNITS) {

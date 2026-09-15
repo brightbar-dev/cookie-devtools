@@ -4,28 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="manifest.open_in_tab" />
-  <title>Cookie DevTools — Settings</title>
+  <title data-i18n="optionsPageTitle"></title>
 </head>
 <body>
   <div class="container">
-    <h1>Cookie DevTools Settings</h1>
+    <h1 data-i18n="optionsHeading"></h1>
 
     <section>
-      <h2>Appearance</h2>
+      <h2 data-i18n="optionsAppearance"></h2>
       <label class="setting-row">
-        <span>Theme</span>
+        <span data-i18n="optionsTheme"></span>
         <select id="theme">
-          <option value="auto">Auto (system)</option>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
+          <option value="auto" data-i18n="optionsThemeAuto"></option>
+          <option value="light" data-i18n="optionsThemeLight"></option>
+          <option value="dark" data-i18n="optionsThemeDark"></option>
         </select>
       </label>
     </section>
 
     <section>
-      <h2>Monitor</h2>
+      <h2 data-i18n="tabMonitor"></h2>
       <label class="setting-row">
-        <span>Max change log entries</span>
+        <span data-i18n="optionsMaxLog"></span>
         <select id="max-log">
           <option value="100">100</option>
           <option value="250">250</option>
@@ -36,24 +36,24 @@
     </section>
 
     <section>
-      <h2>Protected and blocked cookies</h2>
-      <p class="setting-help">Protected cookies are put back whenever a site changes or deletes them. Blocked cookies are deleted whenever a site sets them. Add either from a cookie's editor.</p>
+      <h2 data-i18n="optionsRulesHeading"></h2>
+      <p class="setting-help" data-i18n="optionsRulesHelp"></p>
       <ul id="rules-list" class="rules-list"></ul>
     </section>
 
     <section>
-      <h2>Data</h2>
+      <h2 data-i18n="optionsData"></h2>
       <div class="setting-row">
-        <span>Clear all profiles and change log</span>
-        <button id="btn-clear-data" class="action-btn danger">Clear All Data</button>
+        <span data-i18n="optionsClearDataLabel"></span>
+        <button id="btn-clear-data" class="action-btn danger" data-i18n="optionsClearData"></button>
       </div>
     </section>
 
     <section>
-      <h2>About</h2>
-      <p id="about-version">Cookie DevTools</p>
-      <p>Developer-focused cookie manager with real-time monitoring, environment profiles, and one-click export.</p>
-      <p>No ads. No tracking. No data collection. Change-monitor recording is off until you turn it on, and its log stays on this device.</p>
+      <h2 data-i18n="optionsAbout"></h2>
+      <p id="about-version" data-i18n="appName"></p>
+      <p data-i18n="optionsAboutSummary"></p>
+      <p data-i18n="optionsAboutPrivacy"></p>
     </section>
   </div>
   <script type="module" src="./main.ts"></script>

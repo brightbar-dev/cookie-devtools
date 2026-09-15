@@ -4,6 +4,7 @@ import { cookieHost } from './cookies';
 import type { CookieLike, PartitionKey } from './cookies';
 import { validateCookie } from './validate';
 import { cookieIdentity } from './writes';
+import { t } from './i18n';
 
 export type ImportFormat =
   | 'cookie-json'
@@ -15,16 +16,18 @@ export type ImportFormat =
   | 'curl'
   | 'unknown';
 
-export const FORMAT_LABELS: Record<ImportFormat, string> = {
-  'cookie-json': 'JSON cookie list (Cookie DevTools, Cookie-Editor)',
-  'editthiscookie-json': 'EditThisCookie JSON',
-  'playwright-json': 'Playwright / Puppeteer cookies',
-  netscape: 'Netscape cookies.txt',
-  header: 'Cookie header',
-  'set-cookie': 'Set-Cookie headers',
-  curl: 'curl command',
-  unknown: 'Unrecognised format',
-};
+export function formatLabel(format: ImportFormat): string {
+  switch (format) {
+    case 'cookie-json': return t('importFormatCookieJson');
+    case 'editthiscookie-json': return t('importFormatEditThisCookie');
+    case 'playwright-json': return t('importFormatPlaywright');
+    case 'netscape': return t('importFormatNetscape');
+    case 'header': return t('importFormatHeader');
+    case 'set-cookie': return t('importFormatSetCookie');
+    case 'curl': return t('importFormatCurl');
+    case 'unknown': return t('importFormatUnknown');
+  }
+}
 
 export interface ImportContext {
   /** The page cookies without their own domain (a Cookie header, say) are imported for. */
@@ -118,13 +121,13 @@ function toSeconds(n: number): number {
 }
 
 function fromJsonEntry(entry: unknown, index: number, ctx: ImportContext): Candidate {
-  if (!entry || typeof entry !== 'object') return { name: `entry ${index + 1}`, reason: 'not a cookie object' };
+  if (!entry || typeof entry !== 'object') return { name: t('importEntryName', index + 1), reason: t('skipNotCookieObject') };
   const o = entry as Record<string, unknown>;
-  if (typeof o.name !== 'string') return { name: `entry ${index + 1}`, reason: 'has no name' };
+  if (typeof o.name !== 'string') return { name: t('importEntryName', index + 1), reason: t('skipNoName') };
 
   const page = pageInfo(ctx.url);
   let domain = typeof o.domain === 'string' && o.domain ? o.domain.trim() : page.host;
-  if (!domain) return { name: o.name, reason: 'has no domain, and there is no current site to use' };
+  if (!domain) return { name: o.name, reason: t('skipNoDomain') };
   const hostOnly = typeof o.hostOnly === 'boolean' ? o.hostOnly : !domain.startsWith('.');
   domain = hostOnly ? cookieHost(domain) : '.' + cookieHost(domain);
 
@@ -151,10 +154,10 @@ function parseJson(text: string, ctx: ImportContext): Candidate[] | string {
   try {
     parsed = JSON.parse(text);
   } catch (err) {
-    return `Not valid JSON: ${(err as Error).message}`;
+    return t('importInvalidJson', (err as Error).message);
   }
   const list = jsonCookieArray(parsed);
-  if (!list) return 'JSON, but not a list of cookies.';
+  if (!list) return t('importNotCookieList');
   return list.map((entry, i) => fromJsonEntry(entry, i, ctx));
 }
 
@@ -171,7 +174,7 @@ function parseNetscape(text: string): Candidate[] {
     }
     const fields = line.split('\t');
     if (fields.length < 7) {
-      out.push({ name: `line ${i + 1}`, reason: 'is not 7 tab-separated fields' });
+      out.push({ name: t('importLineName', i + 1), reason: t('skipNetscapeFields') });
       return;
     }
     const [domainField, includeSubdomains, path, secure, expires, name, ...valueParts] = fields as [string, string, string, string, string, string, ...string[]];
@@ -203,11 +206,11 @@ function pairsToCookies(pairs: string, ctx: ImportContext, host?: string): Candi
     if (!piece) continue;
     const eq = piece.indexOf('=');
     if (eq < 0) {
-      out.push({ name: piece, reason: 'has no “=”, so it is not a name=value pair' });
+      out.push({ name: piece, reason: t('skipNoEquals') });
       continue;
     }
     if (!domain) {
-      out.push({ name: piece.slice(0, eq).trim(), reason: 'there is no current site to import it for' });
+      out.push({ name: piece.slice(0, eq).trim(), reason: t('skipNoSite') });
       continue;
     }
     out.push({
@@ -239,7 +242,7 @@ export function parseSetCookie(header: string, ctx: ImportContext): Candidate {
   const page = pageInfo(ctx.url);
   const [first = '', ...attrs] = header.replace(/^set-cookie\s*:\s*/i, '').split(';');
   const eq = first.indexOf('=');
-  if (eq < 0) return { name: first.trim() || '(empty)', reason: 'has no “=”, so it is not a name=value pair' };
+  if (eq < 0) return { name: first.trim() || t('importEmptyName'), reason: t('skipNoEquals') };
   const cookie: CookieLike = {
     name: first.slice(0, eq).trim(),
     value: first.slice(eq + 1).trim(),
@@ -270,10 +273,10 @@ export function parseSetCookie(header: string, ctx: ImportContext): Candidate {
       const t = Date.parse(val);
       if (!Number.isNaN(t)) expires = t / 1000;
     } else if (key === 'partitioned') {
-      return { name: cookie.name, reason: 'is Partitioned, and a header does not say which top-level site it belongs to — import it from a JSON export instead' };
+      return { name: cookie.name, reason: t('skipPartitionedHeader') };
     }
   }
-  if (!cookie.domain) return { name: cookie.name, reason: 'has no Domain, and there is no current site to use' };
+  if (!cookie.domain) return { name: cookie.name, reason: t('skipNoDomainAttribute') };
   // Max-Age wins over Expires (RFC 6265 §5.3).
   const expiry = maxAge !== null ? ctx.nowSeconds + maxAge : expires;
   if (expiry !== null) {
@@ -308,8 +311,8 @@ function parseCurl(text: string, ctx: ImportContext): Candidate[] | string {
   const cookieHeader = shellArgs(oneLine, /-H|--header/).find((h) => /^cookie\s*:/i.test(h));
   const fromHeader = cookieHeader ? cookieHeader.replace(/^cookie\s*:\s*/i, '') : null;
   const pairs = (fromFlag ?? fromHeader)?.split(QUOTE_PLACEHOLDER).join("'");
-  if (!pairs) return 'A curl command, but it has no -b/--cookie or Cookie header.';
-  if (!pairs.includes('=')) return `curl reads cookies from the file “${pairs}” here — open that file instead.`;
+  if (!pairs) return t('importCurlNoCookies');
+  if (!pairs.includes('=')) return t('importCurlCookieFile', pairs);
   return pairsToCookies(pairs, ctx, host);
 }
 
@@ -352,13 +355,13 @@ export function planImport(text: string, ctx: ImportContext): ImportPlan {
       candidates = parseCurl(text, ctx);
       break;
     default: {
-      const t = text.trim();
-      let error = 'Not a format this can read: JSON, Netscape cookies.txt, a Cookie or Set-Cookie header, or a curl command.';
-      if (!t) {
-        error = 'Paste an export or open a file.';
-      } else if (t.startsWith('[') || t.startsWith('{')) {
-        const parsed = parseJson(t, ctx);
-        error = typeof parsed === 'string' ? parsed : 'JSON, but not a list of cookies.';
+      const trimmed = text.trim();
+      let error = t('importUnknownFormat');
+      if (!trimmed) {
+        error = t('importEmpty');
+      } else if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+        const parsed = parseJson(trimmed, ctx);
+        error = typeof parsed === 'string' ? parsed : t('importNotCookieList');
       }
       return { format, cookies: [], skipped: [], error };
     }
@@ -377,7 +380,7 @@ export function planImport(text: string, ctx: ImportContext): ImportPlan {
     if (error) {
       skipped.push({ name: c.name, reason: error.message });
     } else if (issues.some((i) => i.code === 'expiry-past')) {
-      skipped.push({ name: c.name, reason: 'has already expired' });
+      skipped.push({ name: c.name, reason: t('skipExpired') });
     } else {
       valid.push(c);
     }
@@ -388,7 +391,7 @@ export function planImport(text: string, ctx: ImportContext): ImportPlan {
   valid.forEach((c, i) => lastIndex.set(cookieIdentity(c), i));
   const cookies = valid.filter((c, i) => {
     if (lastIndex.get(cookieIdentity(c)) === i) return true;
-    skipped.push({ name: c.name, reason: 'appears again later in the import' });
+    skipped.push({ name: c.name, reason: t('skipDuplicate') });
     return false;
   });
 

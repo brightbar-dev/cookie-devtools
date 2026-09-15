@@ -2,19 +2,22 @@
 import type { CookieLike } from './cookies';
 import { cookieSize } from './validate';
 import { formatRelative } from './decode';
+import { t } from './i18n';
 
 export type SortKey = 'name' | 'domain' | 'expiry' | 'size';
 export type Chip = 'secure' | 'httpOnly' | 'session' | 'partitioned' | 'sameSiteNone';
 
 export const CHIPS: Chip[] = ['secure', 'httpOnly', 'session', 'partitioned', 'sameSiteNone'];
 
-export const CHIP_LABELS: Record<Chip, string> = {
-  secure: 'Secure',
-  httpOnly: 'HttpOnly',
-  session: 'Session',
-  partitioned: 'Partitioned',
-  sameSiteNone: 'SameSite=None',
-};
+export function chipLabel(chip: Chip): string {
+  switch (chip) {
+    case 'secure': return t('attrSecure');
+    case 'httpOnly': return t('attrHttpOnly');
+    case 'session': return t('attrSession');
+    case 'partitioned': return t('attrPartitioned');
+    case 'sameSiteNone': return t('chipSameSiteNone');
+  }
+}
 
 /** Chrome keeps at most this many cookies per domain before evicting the oldest. */
 export const MAX_COOKIES_PER_DOMAIN = 180;
@@ -79,28 +82,28 @@ export function chipCounts(cookies: CookieLike[]): Record<Chip, number> {
 
 /** Compact expiry for a list row: "Session", "Expired", "45m", "5h", "3d", "1.1y". */
 export function shortExpiry(cookie: CookieLike, nowSeconds: number): string {
-  if (cookie.session || !cookie.expirationDate) return 'Session';
+  if (cookie.session || !cookie.expirationDate) return t('attrSession');
   const left = cookie.expirationDate - nowSeconds;
-  if (left <= 0) return 'Expired';
+  if (left <= 0) return t('expiryExpired');
   // Round within each unit and carry, so 23.99 hours reads "1d", not "24h".
   const minutes = Math.round(left / 60);
-  if (minutes < 60) return `${Math.max(1, minutes)}m`;
+  if (minutes < 60) return t('expiryShortMinutes', Math.max(1, minutes));
   const hours = Math.round(left / 3600);
-  if (hours < 24) return `${hours}h`;
+  if (hours < 24) return t('expiryShortHours', hours);
   const days = Math.round(left / 86400);
-  if (days < 365) return `${days}d`;
-  return `${(left / (365 * 86400)).toFixed(1).replace(/\.0$/, '')}y`;
+  if (days < 365) return t('expiryShortDays', days);
+  return t('expiryShortYears', (left / (365 * 86400)).toFixed(1).replace(/\.0$/, ''));
 }
 
 export function expiryLabel(cookie: CookieLike, nowSeconds: number): string {
-  if (cookie.session || !cookie.expirationDate) return 'Session';
-  if (cookie.expirationDate <= nowSeconds) return 'Expired';
+  if (cookie.session || !cookie.expirationDate) return t('attrSession');
+  if (cookie.expirationDate <= nowSeconds) return t('expiryExpired');
   return formatRelative(cookie.expirationDate, nowSeconds);
 }
 
 export function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  return `${(bytes / 1024).toFixed(bytes < 10240 ? 1 : 0)} KB`;
+  if (bytes < 1024) return t('bytesB', bytes);
+  return t('bytesKB', (bytes / 1024).toFixed(bytes < 10240 ? 1 : 0));
 }
 
 export interface CookieStats {

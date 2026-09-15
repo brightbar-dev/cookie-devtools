@@ -1,4 +1,5 @@
 // Shared cookie utility functions — extracted for testability
+import { t } from './i18n';
 
 export interface PartitionKey {
   topLevelSite?: string;
@@ -103,8 +104,8 @@ export function formatTime(timestamp: number): string {
 }
 
 export function formatExpiry(cookie: Pick<CookieLike, 'session' | 'expirationDate'>): string {
-  if (cookie.session) return 'Session';
-  if (!cookie.expirationDate) return 'Session';
+  if (cookie.session) return t('attrSession');
+  if (!cookie.expirationDate) return t('attrSession');
   const d = new Date(cookie.expirationDate * 1000);
   return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
 }
@@ -140,15 +141,15 @@ export interface Badge {
 
 export function cookieBadges(cookie: Pick<CookieLike, 'secure' | 'httpOnly' | 'session' | 'sameSite' | 'partitionKey'>): Badge[] {
   const badges: Badge[] = [];
-  if (cookie.secure) badges.push({ label: 'S', kind: 'secure', title: 'Secure — sent only over HTTPS' });
-  if (cookie.httpOnly) badges.push({ label: 'H', kind: 'httponly', title: 'HttpOnly — hidden from page JavaScript' });
-  if (cookie.session) badges.push({ label: 'Ses', kind: 'session', title: 'Session — removed when the browser closes' });
+  if (cookie.secure) badges.push({ label: t('badgeSecure'), kind: 'secure', title: t('badgeSecureTitle') });
+  if (cookie.httpOnly) badges.push({ label: t('badgeHttpOnly'), kind: 'httponly', title: t('badgeHttpOnlyTitle') });
+  if (cookie.session) badges.push({ label: t('badgeSession'), kind: 'session', title: t('badgeSessionTitle') });
   const ss = sameSiteLabel(cookie.sameSite);
   if (ss) badges.push({ label: ss, kind: `samesite-${cookie.sameSite}`, title: `SameSite=${ss}` });
   const pk = cookie.partitionKey;
   if (pk?.topLevelSite) {
-    const where = pk.hasCrossSiteAncestor ? 'set by an embedded cross-site frame' : 'first-party';
-    badges.push({ label: 'P', kind: 'partitioned', title: `Partitioned (CHIPS) under ${pk.topLevelSite}, ${where}` });
+    const title = pk.hasCrossSiteAncestor ? t('badgePartitionedCrossSiteTitle', pk.topLevelSite) : t('badgePartitionedFirstPartyTitle', pk.topLevelSite);
+    badges.push({ label: t('badgePartitioned'), kind: 'partitioned', title });
   }
   return badges;
 }
@@ -162,10 +163,16 @@ export function sameSiteLabel(value?: string | null): string | null {
   return value === 'no_restriction' ? 'None' : value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-export const CAUSE_MAP: Record<string, string> = {
-  explicit: 'Set/deleted by page or extension',
-  overwrite: 'Overwritten by new value',
-  expired: 'Expired',
-  evicted: 'Evicted (storage limit)',
-  expired_overwrite: 'Expired and overwritten',
-};
+export const CHANGE_CAUSES = ['explicit', 'overwrite', 'expired', 'evicted', 'expired_overwrite'] as const;
+
+/** What a cookies.onChanged cause means, for the Monitor; unknown causes are shown as given. */
+export function causeLabel(cause: string): string {
+  switch (cause) {
+    case 'explicit': return t('causeExplicit');
+    case 'overwrite': return t('causeOverwrite');
+    case 'expired': return t('expiryExpired');
+    case 'evicted': return t('causeEvicted');
+    case 'expired_overwrite': return t('causeExpiredOverwrite');
+    default: return cause;
+  }
+}

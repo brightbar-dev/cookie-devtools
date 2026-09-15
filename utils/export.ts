@@ -1,22 +1,31 @@
 // Export formats, the text each produces, and a download filename.
 import { toNetscape, toCurl, toHeaderString } from './cookies';
 import type { CookieLike } from './cookies';
+import { t } from './i18n';
 
 export type ExportFormat = 'json' | 'netscape' | 'curl' | 'header';
 
 export interface ExportFormatInfo {
   id: ExportFormat;
-  label: string;
   mime: string;
   suffix: string;
 }
 
 export const EXPORT_FORMATS: ExportFormatInfo[] = [
-  { id: 'json', label: 'JSON', mime: 'application/json', suffix: '.json' },
-  { id: 'netscape', label: 'cookies.txt (curl/wget)', mime: 'text/plain', suffix: '.cookies.txt' },
-  { id: 'curl', label: 'curl command', mime: 'text/x-shellscript', suffix: '.curl.sh' },
-  { id: 'header', label: 'Cookie header', mime: 'text/plain', suffix: '.header.txt' },
+  { id: 'json', mime: 'application/json', suffix: '.json' },
+  { id: 'netscape', mime: 'text/plain', suffix: '.cookies.txt' },
+  { id: 'curl', mime: 'text/x-shellscript', suffix: '.curl.sh' },
+  { id: 'header', mime: 'text/plain', suffix: '.header.txt' },
 ];
+
+export function exportFormatLabel(format: ExportFormat): string {
+  switch (format) {
+    case 'json': return t('exportFormatJson');
+    case 'netscape': return t('exportFormatNetscape');
+    case 'curl': return t('exportFormatCurl');
+    case 'header': return t('exportFormatHeader');
+  }
+}
 
 export function formatExport(format: ExportFormat, cookies: CookieLike[], url?: string | null): string {
   switch (format) {

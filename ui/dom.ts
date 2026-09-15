@@ -1,5 +1,7 @@
-// Small DOM and messaging helpers shared by the extension's pages.
+// Small DOM, messaging and string helpers shared by the extension's pages.
 import type { WriteReport } from '@/utils/messages';
+import { t } from '@/utils/i18n';
+import type { MessageKey } from '@/utils/i18n';
 
 export const UNDO_MS = 10_000;
 
@@ -10,8 +12,18 @@ export function send<T>(message: Record<string, unknown>): Promise<T> {
   return browser.runtime.sendMessage(message) as Promise<T>;
 }
 
-export function plural(n: number, word: string): string {
-  return `${n} ${word}${n === 1 ? '' : 's'}`;
+const I18N_ATTRIBUTES = ['title', 'aria-label', 'placeholder'];
+
+/** Fills text from data-i18n, and attributes from data-i18n-title, data-i18n-aria-label and data-i18n-placeholder. */
+export function localize(root: ParentNode): void {
+  root.querySelectorAll<HTMLElement>('[data-i18n]').forEach((node) => {
+    node.textContent = t(node.dataset.i18n as MessageKey);
+  });
+  for (const attr of I18N_ATTRIBUTES) {
+    root.querySelectorAll<HTMLElement>(`[data-i18n-${attr}]`).forEach((node) => {
+      node.setAttribute(attr, t(node.getAttribute(`data-i18n-${attr}`) as MessageKey));
+    });
+  }
 }
 
 export interface ToastOptions {
@@ -35,7 +47,7 @@ export function toast(message: string, opts: ToastOptions = {}) {
   if (opts.onAction) {
     const button = document.createElement('button');
     button.type = 'button';
-    button.textContent = opts.actionLabel || 'Undo';
+    button.textContent = opts.actionLabel || t('actionUndo');
     button.addEventListener('click', () => {
       box.remove();
       window.clearTimeout(toastTimer);
@@ -47,10 +59,11 @@ export function toast(message: string, opts: ToastOptions = {}) {
   toastTimer = window.setTimeout(() => box.remove(), opts.onAction ? UNDO_MS : opts.error ? 5000 : 2100);
 }
 
-export function describeWrite(verb: string, report: WriteReport): string {
-  const parts = [`${verb} ${plural(report.written.length, 'cookie')}`];
-  if (report.expired.length) parts.push(`${report.expired.length} expired, skipped`);
-  if (report.failed.length) parts.push(`${report.failed.length} failed (${report.failed.map((f) => f.name).join(', ')})`);
+/** A write's outcome: the headline (what was written), then what expired or failed. */
+export function describeWrite(headline: string, report: WriteReport): string {
+  const parts = [headline];
+  if (report.expired.length) parts.push(t('writeExpiredSkipped', report.expired.length));
+  if (report.failed.length) parts.push(t('writeFailed', report.failed.length, report.failed.map((f) => f.name).join(', ')));
   return parts.join(' · ');
 }
 
