@@ -58,6 +58,7 @@ Cookie editor and cookie manager for developers: edit safely, import from other 
 - Dark mode (auto-detects system preference); colours meet WCAG AA in both themes, checked by a test
 - Keyboard: `/` to search, arrow keys through the list, Enter to edit, Space to select, Delete to delete (with undo)
 - No ads, no tracking, no data collection
+- Respects Chrome’s site access: limit it to “On click” or to specific sites, and on a site it can’t read it says so and offers to allow that site
 - Minimal, fast popup UI
 
 ## Installation
@@ -146,7 +147,7 @@ PERFECT FOR
 - Checking third-party and partitioned cookies
 
 PERMISSIONS, PLAINLY
-When you add Cookie DevTools, Chrome warns that it can "Read and change all your data on all websites". That is how Chrome describes access to every site, and a cookie editor needs it: an extension can read and write a site's cookies only if it has access to that site, and you might be working on any site. Cookie DevTools uses that access only for cookies, and to see which site the active tab is on. It never reads page content, never injects scripts, and never sends data anywhere. Beyond that it asks only for local storage for your settings and for the side panel — not for the tabs permission.
+When you add Cookie DevTools, Chrome warns that it can "Read and change all your data on all websites". That is how Chrome describes access to every site, and a cookie editor needs it: an extension can read and write a site's cookies only if it has access to that site, and you might be working on any site. Cookie DevTools uses that access only for cookies, and to see which site the active tab is on. It never reads page content, never injects scripts, and never sends data anywhere. Beyond that it asks only for local storage for your settings and for the side panel — not for the tabs permission. If you limit its site access in Chrome’s extension settings, it says so on sites it can’t read and offers to allow that site, rather than showing an empty list.
 
 ### Category
 Developer Tools

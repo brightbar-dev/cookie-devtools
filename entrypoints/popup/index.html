@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title data-i18n="appName"></title>
+  <!-- WXT copies this title into the manifest as the toolbar button's default_title, where Chrome localizes __MSG_appName__; localize() fills it at runtime. -->
+  <title data-i18n="appName">__MSG_appName__</title>
 </head>
 <body>
   <div id="app" class="container"></div>
