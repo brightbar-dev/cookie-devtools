@@ -25,13 +25,33 @@
     <section id="tab-cookies" class="tab-content active">
       <div class="toolbar">
         <input type="text" id="search" placeholder="Filter cookies..." autocomplete="off" aria-label="Filter cookies">
+        <div class="sort-group">
+          <select id="sort-key" aria-label="Sort cookies by" title="Sort by">
+            <option value="name">Name</option>
+            <option value="domain">Domain</option>
+            <option value="expiry">Expiry</option>
+            <option value="size">Size</option>
+          </select>
+          <button id="btn-sort-dir" class="icon-btn small" aria-label="Sort direction: ascending" title="Ascending">&#8593;</button>
+        </div>
         <div class="toolbar-actions">
           <button id="btn-add" class="action-btn" title="Add cookie">+ Add</button>
-          <button id="btn-export" class="action-btn" title="Export">Export &#9662;</button>
+          <button id="btn-import" class="action-btn" title="Import cookies">Import</button>
+          <button id="btn-export" class="action-btn" title="Export" aria-haspopup="menu">Export &#9662;</button>
           <button id="btn-delete-all" class="action-btn danger" title="Delete all cookies for this site">Clear</button>
         </div>
       </div>
-      <div class="domain-info" id="domain-info"></div>
+      <div id="chip-bar" class="chip-bar" role="group" aria-label="Show only cookies that are"></div>
+      <div class="domain-info">
+        <input type="checkbox" id="select-all" class="row-select" aria-label="Select all shown cookies">
+        <span id="domain-info" class="domain-name"></span>
+        <span id="selection-info" class="selection-info" hidden>
+          <span id="selection-count"></span>
+          <button id="btn-delete-selected" class="action-btn danger">Delete</button>
+          <button id="btn-clear-selection" class="action-btn">Clear selection</button>
+        </span>
+        <span id="list-stats" class="list-stats"></span>
+      </div>
       <div id="cookie-list" class="cookie-list"></div>
       <div id="cookie-empty" class="empty-state" style="display:none;">No cookies found for this site.</div>
     </section>
@@ -63,11 +83,9 @@
     </section>
 
     <!-- Export Menu (hidden by default) -->
-    <div id="export-menu" class="dropdown-menu" style="display:none;">
-      <button data-format="json">JSON</button>
-      <button data-format="netscape">Cookie File (curl/wget)</button>
-      <button data-format="curl">curl command</button>
-      <button data-format="header">Cookie header</button>
+    <div id="export-menu" class="dropdown-menu export-menu" style="display:none;" role="menu">
+      <p id="export-scope" class="menu-note"></p>
+      <div id="export-rows"></div>
     </div>
 
     <!-- Cookie Editor -->
@@ -88,6 +106,7 @@
             <textarea id="edit-value" rows="3" spellcheck="false" aria-describedby="msg-value edit-size"></textarea>
             <small class="field-msg" id="msg-value"></small>
           </div>
+          <div id="value-inspector" class="inspector" hidden></div>
           <div class="field-row">
             <div class="field grow">
               <label for="edit-domain">Domain</label>
@@ -132,6 +151,27 @@
         <div class="modal-actions">
           <button type="button" id="btn-editor-cancel" class="action-btn">Cancel</button>
           <button type="submit" id="btn-editor-save" class="action-btn primary">Save</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Import -->
+    <dialog id="import-dialog" class="dialog dialog-wide" aria-labelledby="import-title">
+      <form id="import-form" class="dialog-body" novalidate>
+        <h2 id="import-title">Import cookies</h2>
+        <p class="dialog-sub">Paste, open or drop JSON (Cookie DevTools, Cookie-Editor, EditThisCookie, Playwright), a Netscape cookies.txt, a Cookie or Set-Cookie header, or a curl command. Nothing is written until you import.</p>
+        <textarea id="import-text" class="import-text" rows="5" spellcheck="false" aria-label="Cookies to import" placeholder="Paste here, or drop a file"></textarea>
+        <div class="import-file-row">
+          <button type="button" id="btn-import-file" class="action-btn">Open file…</button>
+          <input type="file" id="import-file" accept=".json,.txt,.har,text/plain,application/json" hidden>
+          <button type="button" id="btn-import-tab" class="link-btn">Open in a tab</button>
+          <span id="import-source" class="import-source"></span>
+          <span id="import-format" class="import-format"></span>
+        </div>
+        <div id="import-preview" class="import-preview" aria-live="polite"></div>
+        <div class="modal-actions">
+          <button type="button" id="btn-import-cancel" class="action-btn">Close</button>
+          <button type="submit" id="btn-import-apply" class="action-btn primary" disabled>Import</button>
         </div>
       </form>
     </dialog>

@@ -1,5 +1,6 @@
-import { toNetscape, toCurl, toHeaderString, domainAppliesToHost } from '@/utils/cookies';
+import { domainAppliesToHost } from '@/utils/cookies';
 import type { CookieLike } from '@/utils/cookies';
+import type { ChangeEntry, Failure, WriteReport } from '@/utils/messages';
 import {
   toSetDetails, toRemoveDetails, shouldRemoveOriginal, planRestore, dedupeCookies,
   partitionSiteCandidates, isExpired,
@@ -8,24 +9,6 @@ import {
   ChangeLogBuffer, DEFAULT_MONITOR, DEFAULT_MAX_LOG, normalizeMonitorSettings, clampMaxLog, shouldRecord,
 } from '@/utils/monitor';
 import type { MonitorSettings } from '@/utils/monitor';
-
-interface ChangeEntry {
-  timestamp: number;
-  removed: boolean;
-  cause: string;
-  cookie: CookieLike;
-}
-
-interface Failure {
-  name: string;
-  error: string;
-}
-
-interface WriteReport {
-  written: CookieLike[];
-  expired: string[];
-  failed: Failure[];
-}
 
 type Message = Record<string, unknown>;
 
@@ -92,13 +75,13 @@ export default defineBackground(() => {
     updateCookie: handleUpdateCookie,
     removeCookies: handleRemoveCookies,
     restoreCookies: (msg) => writeCookies((msg.cookies as CookieLike[]) || []),
+    importCookies: (msg) => writeCookies((msg.cookies as CookieLike[]) || []),
     getChangeLog: handleGetChangeLog,
     clearChangeLog: handleClearChangeLog,
     saveProfile: handleSaveProfile,
     loadProfile: handleLoadProfile,
     deleteProfile: handleDeleteProfile,
     getProfiles: handleGetProfiles,
-    exportCookies: handleExportCookies,
   };
 
   // sendResponse + `return true` rather than a returned promise: it works in every Chrome and Firefox version.
@@ -199,15 +182,15 @@ export default defineBackground(() => {
       try {
         const result = await browser.cookies.remove(toRemoveDetails(cookie));
         if (result) removed.push(cookie);
-        else failed.push({ name: cookie.name, error: 'not found' });
+        else failed.push({ name: cookie.name, domain: cookie.domain, error: 'not found' });
       } catch (err) {
-        failed.push({ name: cookie.name, error: errorMessage(err) });
+        failed.push({ name: cookie.name, domain: cookie.domain, error: errorMessage(err) });
       }
     }
     return { removed, failed };
   }
 
-  /** Recreate cookies exactly as captured, skipping any that have expired since. */
+  /** Write cookies exactly as given (a snapshot, a profile or an import), skipping any that have expired. */
   async function writeCookies(cookies: CookieLike[]): Promise<WriteReport> {
     const { toSet, expired } = planRestore(cookies, Date.now() / 1000);
     const written: CookieLike[] = [];
@@ -216,9 +199,9 @@ export default defineBackground(() => {
       try {
         const result = await browser.cookies.set(toSetDetails(cookie) as Browser.cookies.SetDetails);
         if (result) written.push(result);
-        else failed.push({ name: cookie.name, error: 'not stored' });
+        else failed.push({ name: cookie.name, domain: cookie.domain, error: 'not stored' });
       } catch (err) {
-        failed.push({ name: cookie.name, error: errorMessage(err) });
+        failed.push({ name: cookie.name, domain: cookie.domain, error: errorMessage(err) });
       }
     }
     return { written, expired: expired.map((c) => c.name), failed };
@@ -297,32 +280,5 @@ export default defineBackground(() => {
       };
     }
     return { profiles: summary };
-  }
-
-  // Export
-
-  async function handleExportCookies(msg: Message) {
-    const url = msg.url as string | undefined;
-    const format = msg.format as string;
-    const cookies = url ? await getCookiesForUrl(url) : await browser.cookies.getAll({});
-
-    let result: string;
-    switch (format) {
-      case 'json':
-        result = JSON.stringify(cookies, null, 2);
-        break;
-      case 'netscape':
-        result = toNetscape(cookies);
-        break;
-      case 'curl':
-        result = toCurl(cookies, url);
-        break;
-      case 'header':
-        result = toHeaderString(cookies);
-        break;
-      default:
-        result = JSON.stringify(cookies, null, 2);
-    }
-    return { result };
   }
 });
