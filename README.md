@@ -1,6 +1,6 @@
 # Cookie DevTools
 
-Cookie editor and cookie manager for developers: edit safely, import from other tools with a preview, decode JWT/Base64/JSON values, protect and block cookies, watch changes live, and export to JSON, cookies.txt, curl or a Cookie header — in the popup or Chrome's side panel. No ads, no tracking, and nothing leaves your device.
+Cookie editor and cookie manager for developers: edit safely, import from other tools with a preview, decode JWT/Base64/JSON values, protect and block cookies, watch changes live, and export to JSON, cookies.txt, curl or a Cookie header — in the popup, Chrome's side panel or a DevTools panel. No ads, no tracking, and nothing leaves your device.
 
 ## Features
 
@@ -26,8 +26,9 @@ Cookie editor and cookie manager for developers: edit safely, import from other 
 - A preview before anything is written: how many will be created, how many replace existing cookies, and each skipped entry with the reason (already expired, SameSite=None without Secure, and so on)
 - A per-cookie result after import
 
-### Popup and Side Panel
+### Popup, Side Panel and DevTools Panel
 - The same cookie tools in the toolbar popup and in Chrome's side panel, which stays open and follows the tab you're viewing ("Open in side panel" from the popup)
+- A **Cookies** panel in Chrome DevTools that follows the page DevTools is inspecting, including when it navigates (Chrome and other Chromium browsers; not Firefox)
 - The list refreshes as the site changes cookies; the Monitor's **Live** view shows those changes as they happen without saving anything
 
 ### Protect and Block
@@ -101,7 +102,7 @@ Cookie DevTools
 Developer cookie manager with real-time monitoring, environment profiles, and one-click export to curl. No tracking.
 
 ### Detailed Description
-Cookie DevTools is a cookie editor and cookie manager built for developers. See, edit, import, export, decode and protect the cookies of the site you're working on — in the toolbar popup or in Chrome's side panel.
+Cookie DevTools is a cookie editor and cookie manager built for developers. See, edit, import, export, decode and protect the cookies of the site you're working on — in the toolbar popup, in Chrome's side panel or in a DevTools panel.
 
 No ads. No tracking. Nothing you do here leaves your device.
 
@@ -133,6 +134,7 @@ BUILT FOR DAILY DEVELOPER WORK
 - Environment profiles: save a site's cookies as "staging-admin" and switch back in one click
 - Sort by name, domain, expiry or size; filter by Secure, HttpOnly, Session, Partitioned or SameSite=None
 - Side panel that stays open and follows your tabs
+- A Cookies panel in DevTools that follows the page you're inspecting
 - Keyboard friendly: / to search, arrow keys to move, Enter to edit, Delete with undo
 - Dark mode, with WCAG AA contrast in both themes
 

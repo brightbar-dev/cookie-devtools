@@ -20,6 +20,11 @@ export function parseTarget(raw: string | undefined | null): PageTarget | null {
   return { url: url.origin + url.pathname, host: url.hostname, https: url.protocol === 'https:' };
 }
 
+/** Whether a tabs.onUpdated change can mean a different page: a new URL, or a load that finished. */
+export function tabUpdateMovesTarget(info: { url?: string; status?: string }): boolean {
+  return !!info.url || info.status === 'complete';
+}
+
 const BROWSER_SCHEMES = new Set([
   'chrome:', 'chrome-extension:', 'chrome-search:', 'chrome-untrusted:', 'devtools:', 'edge:', 'brave:',
   'opera:', 'vivaldi:', 'about:', 'moz-extension:', 'view-source:',

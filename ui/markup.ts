@@ -1,4 +1,4 @@
-// The cookie UI's markup, shared by the popup and the side panel.
+// The cookie UI's markup, shared by the popup, the side panel and the DevTools panel.
 export const APP_MARKUP = `
     <header>
       <h1>Cookie DevTools</h1>

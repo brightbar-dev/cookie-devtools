@@ -1,5 +1,5 @@
-// The cookie UI, mounted by the popup and the side panel. Each surface only says which page to
-// work on and when that page may have changed.
+// The cookie UI, mounted by the popup, the side panel and the DevTools panel. Each surface only says
+// which page to work on and when that page may have changed.
 import {
   escapeHtml, formatTime, CAUSE_MAP, cookieBadges, cookieHost, filterCookies,
   toDatetimeLocal, fromDatetimeLocal, isPartitioned,
@@ -34,7 +34,7 @@ import { setupImportDialog, openImportDialog } from './import-dialog';
 import { APP_MARKUP } from './markup';
 import './app.css';
 
-export type AppMode = 'popup' | 'page' | 'sidepanel';
+export type AppMode = 'popup' | 'page' | 'sidepanel' | 'devtools';
 
 export interface AppHost {
   mode: AppMode;
@@ -76,8 +76,9 @@ export async function mountApp(root: HTMLElement, appHost: AppHost) {
   host = appHost;
   root.innerHTML = APP_MARKUP;
   document.body.classList.add(`mode-${host.mode}`);
-  // The side panel stays open, so it starts on the live feed; the popup starts on the saved log.
-  monitorView = host.mode === 'sidepanel' ? 'live' : 'saved';
+  // The side panel and DevTools panel stay open, so they start on the live feed; the popup starts on
+  // the saved log.
+  monitorView = host.mode === 'sidepanel' || host.mode === 'devtools' ? 'live' : 'saved';
 
   const data = await browser.storage.local.get({ theme: 'auto', listSort: { key: 'name', dir: 'asc' } });
   applyTheme(data.theme as string);

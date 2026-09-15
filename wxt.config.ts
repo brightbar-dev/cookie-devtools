@@ -42,6 +42,8 @@ export default defineConfig({
     // reading and writing cookies on any site: chrome.cookies ignores `activeTab` (a toolbar click
     // on a manifest without host_permissions reveals the tab URL, yet cookies.getAll returns
     // nothing and cookies.set fails with "No host permissions for cookies").
+    // entrypoints/devtools adds the `devtools_page` (Chromium builds only): the built manifest's
+    // warnings are the same with and without it.
     // scripts/check-manifest.mjs fails CI if the permission set grows.
     permissions: ['cookies', 'storage', 'activeTab'],
     host_permissions: ['<all_urls>'],
