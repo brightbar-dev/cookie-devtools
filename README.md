@@ -12,7 +12,19 @@ Developer-focused cookie manager for Chrome with real-time monitoring, environme
 - Validation before you save: SameSite=None and partitioned cookies need Secure, `__Secure-`/`__Host-` prefix rules, forbidden characters, the 4096-byte size limit, 400-day expiry cap, and a confirmation when an expiry in the past would delete the cookie
 - Delete All asks first, with the count, and both single deletes and Delete All can be undone for 10 seconds
 - Visual attribute badges: Secure, HttpOnly, SameSite, Session, Partitioned
+- Sort by name, domain, expiry or size; filter chips for Secure, HttpOnly, Session, Partitioned and SameSite=None
+- Each row shows when the cookie expires ("3d", "Session") and its size; the list totals the site's cookie bytes and flags cookies near the 4096-byte limit
+- Select cookies to delete or export just those
 - One-click copy cookie values
+
+### Value Inspector
+- Beside the raw value in the editor: URL-decoded, Base64/Base64URL-decoded and pretty-printed JSON views, each with a copy button
+- JWTs: header and payload as JSON, `exp`/`iat`/`nbf` as dates with "expires in 1 hour" or "expired" — decoded only, the signature is never verified
+
+### Import
+- Paste, open or drop: JSON from Cookie DevTools, Cookie-Editor, EditThisCookie or Playwright/Puppeteer; Netscape `cookies.txt`; a `Cookie:` header (applied to the current site); `Set-Cookie:` headers; or a curl command
+- A preview before anything is written: how many will be created, how many replace existing cookies, and each skipped entry with the reason (already expired, SameSite=None without Secure, and so on)
+- A per-cookie result after import
 
 ### Change Monitor
 - Opt-in: nothing is recorded until you switch Record on
@@ -26,10 +38,11 @@ Developer-focused cookie manager for Chrome with real-time monitoring, environme
 - Switch between environments instantly
 
 ### Developer Export
-- **JSON**: Full cookie data with all attributes
-- **Cookie File**: curl/wget-compatible cookie file format
-- **curl command**: Ready-to-paste curl with -b flag
-- **Cookie header**: Raw header string for HTTP requests
+- Copy to the clipboard or download as a file — for the selected cookies, the filtered list, or the whole site
+- **JSON**: Full cookie data with all attributes (re-importable)
+- **Cookie File**: curl/wget-compatible cookie file format, with HttpOnly marked (re-importable)
+- **curl command**: Ready-to-paste curl with -b flag, safely quoted (re-importable)
+- **Cookie header**: Raw header string for HTTP requests (re-importable)
 
 ### Other
 - Dark mode (auto-detects system preference)

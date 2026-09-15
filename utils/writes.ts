@@ -63,7 +63,7 @@ export function cookieIdentity(cookie: Pick<CookieLike, 'name' | 'domain' | 'pat
   const pk = cookie.partitionKey;
   const partition = pk?.topLevelSite ? `${pk.topLevelSite}|${pk.hasCrossSiteAncestor ? 1 : 0}` : '';
   const domain = isHostOnly(cookie) ? cookieHost(cookie.domain) : '.' + cookieHost(cookie.domain);
-  return [cookie.storeId || '0', domain.toLowerCase(), cookie.path || '/', cookie.name, partition].join('');
+  return [cookie.storeId || '0', domain.toLowerCase(), cookie.path || '/', cookie.name, partition].join('\u001f');
 }
 
 /**

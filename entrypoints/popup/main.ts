@@ -3,29 +3,41 @@ import {
   toDatetimeLocal, fromDatetimeLocal, isPartitioned,
 } from '@/utils/cookies';
 import type { CookieLike } from '@/utils/cookies';
-import { isHostOnly } from '@/utils/writes';
+import { isHostOnly, cookieIdentity } from '@/utils/writes';
 import {
   validateCookie, hasErrors, needsConfirmation, cookieSize, MAX_NAME_VALUE_BYTES, SIZE_WARNING_BYTES,
 } from '@/utils/validate';
 import type { CookieDraft, Field, Issue } from '@/utils/validate';
 import { DEFAULT_MONITOR, DEFAULT_MAX_LOG, normalizeMonitorSettings, clampMaxLog } from '@/utils/monitor';
 import type { MonitorSettings } from '@/utils/monitor';
+import {
+  sortCookies, applyChips, chipCounts, shortExpiry, expiryLabel, formatBytes, cookieStats,
+  CHIPS, CHIP_LABELS, MAX_COOKIES_PER_DOMAIN,
+} from '@/utils/list';
+import type { Chip, SortKey } from '@/utils/list';
+import { EXPORT_FORMATS, formatExport, exportFilename } from '@/utils/export';
+import type { ExportFormat } from '@/utils/export';
+import type { RemoveResult, WriteReport, UpdateResult, LoadProfileResult, ChangeEntry } from '@/utils/messages';
+import {
+  el, input, send, plural, toast, describeWrite, confirmDialog, copyText, downloadText,
+} from '@/ui/dom';
+import { renderInspector } from '@/ui/inspector';
+import { setupImportDialog, openImportDialog } from '@/ui/import-dialog';
 import './style.css';
 
-interface Failure { name: string; error: string }
-interface RemoveResult { removed: CookieLike[]; failed: Failure[] }
-interface WriteReport { written: CookieLike[]; expired: string[]; failed: Failure[] }
-interface UpdateResult { cookie?: CookieLike | null; deleted?: boolean; warning?: string; error?: string }
-interface LoadProfileResult extends WriteReport { previous: CookieLike[]; error?: string }
-interface ChangeEntry { timestamp: number; removed: boolean; cause: string; cookie: CookieLike }
-
-const UNDO_MS = 10_000;
 const YEAR_SECONDS = 365 * 24 * 60 * 60;
+const SORT_KEYS: SortKey[] = ['name', 'domain', 'expiry', 'size'];
+const params = new URLSearchParams(location.search);
 
 let currentUrl = '';
 let currentDomain = '';
 let currentIsHttps = false;
 let allCookies: CookieLike[] = [];
+let shownCookies: CookieLike[] = [];
+const selected = new Set<string>();
+const activeChips = new Set<Chip>();
+let sortKey: SortKey = 'name';
+let sortDir: 'asc' | 'desc' = 'asc';
 let editingCookie: CookieLike | null = null;
 let editorInitialExpires = '';
 let editorSubmitted = false;
@@ -33,28 +45,23 @@ let confirmArmed = false;
 let monitorSettings: MonitorSettings = DEFAULT_MONITOR;
 let maxLog = DEFAULT_MAX_LOG;
 
-const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
-const input = (id: string) => el<HTMLInputElement>(id);
-
-function send<T>(message: Record<string, unknown>): Promise<T> {
-  return browser.runtime.sendMessage(message) as Promise<T>;
-}
-
-function plural(n: number, word: string): string {
-  return `${n} ${word}${n === 1 ? '' : 's'}`;
-}
-
 document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
-  const data = await browser.storage.local.get({ theme: 'auto' });
+  const data = await browser.storage.local.get({ theme: 'auto', listSort: { key: 'name', dir: 'asc' } });
   applyTheme(data.theme as string);
+  const savedSort = (data.listSort || {}) as { key?: string; dir?: string };
+  if (SORT_KEYS.includes(savedSort.key as SortKey)) sortKey = savedSort.key as SortKey;
+  sortDir = savedSort.dir === 'desc' ? 'desc' : 'asc';
   el('version').textContent = `v${browser.runtime.getManifest().version}`;
 
-  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  if (tab?.url) {
+  // Opened as a tab (to pick an import file, say), the page to work on arrives as ?url=.
+  const pageUrl = params.get('url');
+  if (pageUrl) document.body.classList.add('page-mode');
+  const targetUrl = pageUrl ?? (await browser.tabs.query({ active: true, currentWindow: true }))[0]?.url;
+  if (targetUrl) {
     try {
-      const url = new URL(tab.url);
+      const url = new URL(targetUrl);
       if (url.protocol === 'http:' || url.protocol === 'https:') {
         currentUrl = url.origin + url.pathname;
         currentDomain = url.hostname;
@@ -67,12 +74,25 @@ async function init() {
 
   setupTabs();
   setupSearch();
+  setupListControls();
   setupActions();
   setupEditor();
   setupExportMenu();
   setupMonitor();
   setupProfiles();
-  loadCookies();
+  setupImportDialog({
+    url: () => currentUrl,
+    existing: () => allCookies,
+    onApplied: () => { void loadCookies(); },
+    openInTab: pageUrl || !currentUrl ? undefined : () => {
+      void browser.tabs.create({
+        url: `${browser.runtime.getURL('/popup.html')}?url=${encodeURIComponent(currentUrl)}&view=import`,
+      });
+      window.close();
+    },
+  });
+  await loadCookies();
+  if (params.get('view') === 'import') openImportDialog();
 }
 
 function applyTheme(theme: string) {
@@ -81,59 +101,6 @@ function applyTheme(theme: string) {
   } else {
     document.body.classList.remove('dark');
   }
-}
-
-interface ToastOptions {
-  actionLabel?: string;
-  onAction?: () => void;
-  error?: boolean;
-}
-
-let toastTimer: number | undefined;
-
-function toast(message: string, opts: ToastOptions = {}) {
-  const region = el('toast-region');
-  region.replaceChildren();
-  window.clearTimeout(toastTimer);
-
-  const box = document.createElement('div');
-  box.className = 'toast' + (opts.onAction ? ' toast-action' : '') + (opts.error ? ' toast-error' : '');
-  const text = document.createElement('span');
-  text.textContent = message;
-  box.appendChild(text);
-  if (opts.onAction) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.textContent = opts.actionLabel || 'Undo';
-    button.addEventListener('click', () => {
-      box.remove();
-      window.clearTimeout(toastTimer);
-      opts.onAction!();
-    });
-    box.appendChild(button);
-  }
-  region.appendChild(box);
-  toastTimer = window.setTimeout(() => box.remove(), opts.onAction ? UNDO_MS : opts.error ? 5000 : 2100);
-}
-
-function describeWrite(verb: string, report: WriteReport): string {
-  const parts = [`${verb} ${plural(report.written.length, 'cookie')}`];
-  if (report.expired.length) parts.push(`${report.expired.length} expired, skipped`);
-  if (report.failed.length) parts.push(`${report.failed.length} failed (${report.failed.map((f) => f.name).join(', ')})`);
-  return parts.join(' · ');
-}
-
-function confirmDialog(message: string, detail: string, okLabel: string): Promise<boolean> {
-  const dialog = el<HTMLDialogElement>('confirm-dialog');
-  el('confirm-message').textContent = message;
-  el('confirm-detail').textContent = detail;
-  el('btn-confirm-ok').textContent = okLabel;
-  dialog.returnValue = '';
-  dialog.showModal();
-  el('btn-confirm-cancel').focus();
-  return new Promise((resolve) => {
-    dialog.addEventListener('close', () => resolve(dialog.returnValue === 'ok'), { once: true });
-  });
 }
 
 // Tab navigation
@@ -163,6 +130,63 @@ function setupSearch() {
   el('search').addEventListener('input', renderCookies);
 }
 
+function setupListControls() {
+  const sortSelect = el<HTMLSelectElement>('sort-key');
+  sortSelect.value = sortKey;
+  renderSortDirection();
+  sortSelect.addEventListener('change', () => {
+    sortKey = sortSelect.value as SortKey;
+    saveSort();
+    renderCookies();
+  });
+  el('btn-sort-dir').addEventListener('click', () => {
+    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    renderSortDirection();
+    saveSort();
+    renderCookies();
+  });
+
+  const chipBar = el('chip-bar');
+  chipBar.innerHTML = CHIPS.map((chip) =>
+    `<button type="button" class="chip" data-chip="${chip}" aria-pressed="false">${escapeHtml(CHIP_LABELS[chip])} <span class="chip-count"></span></button>`,
+  ).join('');
+  chipBar.addEventListener('click', (e) => {
+    const button = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-chip]');
+    if (!button) return;
+    const chip = button.dataset.chip as Chip;
+    if (activeChips.has(chip)) activeChips.delete(chip);
+    else activeChips.add(chip);
+    renderCookies();
+  });
+
+  input('select-all').addEventListener('change', () => {
+    const on = input('select-all').checked;
+    for (const c of shownCookies) {
+      const id = cookieIdentity(c);
+      if (on) selected.add(id);
+      else selected.delete(id);
+    }
+    renderCookies();
+  });
+  el('btn-delete-selected').addEventListener('click', deleteSelected);
+  el('btn-clear-selection').addEventListener('click', () => {
+    selected.clear();
+    renderCookies();
+  });
+}
+
+function renderSortDirection() {
+  const button = el('btn-sort-dir');
+  const asc = sortDir === 'asc';
+  button.textContent = asc ? '↑' : '↓';
+  button.title = asc ? 'Ascending' : 'Descending';
+  button.setAttribute('aria-label', `Sort direction: ${asc ? 'ascending' : 'descending'}`);
+}
+
+function saveSort() {
+  void browser.storage.local.set({ listSort: { key: sortKey, dir: sortDir } });
+}
+
 async function loadCookies() {
   const domainInfo = el('domain-info');
   if (currentDomain) {
@@ -176,32 +200,90 @@ async function loadCookies() {
   renderCookies();
 }
 
+function renderChips(pool: CookieLike[]) {
+  const counts = chipCounts(pool);
+  el('chip-bar').querySelectorAll<HTMLButtonElement>('[data-chip]').forEach((button) => {
+    const chip = button.dataset.chip as Chip;
+    const on = activeChips.has(chip);
+    button.setAttribute('aria-pressed', String(on));
+    button.disabled = !on && counts[chip] === 0;
+    button.querySelector('.chip-count')!.textContent = String(counts[chip]);
+  });
+}
+
+function renderStats() {
+  const stats = cookieStats(allCookies);
+  const box = el('list-stats');
+  if (stats.count === 0) {
+    box.textContent = '';
+    box.title = '';
+    return;
+  }
+  const crowded = stats.crowdedDomains.length
+    ? ` · over ${MAX_COOKIES_PER_DOMAIN} on ${stats.crowdedDomains.join(', ')}`
+    : '';
+  box.textContent = `${formatBytes(stats.totalBytes)} total${crowded}`;
+  box.classList.toggle('is-warning', crowded !== '');
+  box.title = `Largest: ${stats.largest!.name || '(no name)'}, ${stats.largest!.bytes} bytes. ` +
+    `Browsers reject a cookie over ${MAX_NAME_VALUE_BYTES} bytes and keep at most ${MAX_COOKIES_PER_DOMAIN} per domain.`;
+}
+
+function renderSelection() {
+  // Forget selections of cookies that are gone.
+  const present = new Set(allCookies.map((c) => cookieIdentity(c)));
+  for (const id of [...selected]) if (!present.has(id)) selected.delete(id);
+
+  el('selection-info').hidden = selected.size === 0;
+  el('selection-count').textContent = `${selected.size} selected`;
+
+  const shownIds = shownCookies.map((c) => cookieIdentity(c));
+  const selectedShown = shownIds.filter((id) => selected.has(id)).length;
+  const all = input('select-all');
+  all.disabled = shownIds.length === 0;
+  all.checked = shownIds.length > 0 && selectedShown === shownIds.length;
+  all.indeterminate = selectedShown > 0 && selectedShown < shownIds.length;
+}
+
 function renderCookies() {
   const list = el('cookie-list');
   const empty = el('cookie-empty');
-  const filtered = filterCookies(allCookies, input('search').value);
+  const now = Date.now() / 1000;
+  const searched = filterCookies(allCookies, input('search').value);
+  shownCookies = sortCookies(applyChips(searched, activeChips), sortKey, sortDir);
 
-  if (filtered.length === 0) {
+  renderChips(searched);
+  renderStats();
+  renderSelection();
+  el('cookie-count').textContent = shownCookies.length === allCookies.length
+    ? plural(allCookies.length, 'cookie')
+    : `${shownCookies.length} of ${plural(allCookies.length, 'cookie')}`;
+
+  if (shownCookies.length === 0) {
     list.innerHTML = '';
+    empty.textContent = allCookies.length ? 'No cookies match the filter.' : 'No cookies found for this site.';
     empty.style.display = 'block';
-    el('cookie-count').textContent = '0 cookies';
     return;
   }
-
   empty.style.display = 'none';
-  el('cookie-count').textContent = plural(filtered.length, 'cookie');
 
-  list.innerHTML = filtered.map((cookie, i) => {
+  list.innerHTML = shownCookies.map((cookie, i) => {
+    const isSelected = selected.has(cookieIdentity(cookie));
+    const bytes = cookieSize(cookie.name, cookie.value);
     const badges = cookieBadges(cookie)
       .map((b) => `<span class="badge badge-${escapeHtml(b.kind)}" title="${escapeHtml(b.title)}">${escapeHtml(b.label)}</span>`)
       .join('');
     const name = escapeHtml(cookie.name);
     const label = name || '(no name)';
+    const expiry = cookie.session || !cookie.expirationDate
+      ? 'Session cookie — removed when the browser closes'
+      : `Expires ${new Date(cookie.expirationDate * 1000).toLocaleString()} (${expiryLabel(cookie, now)})`;
 
     return `
-      <div class="cookie-item${isPartitioned(cookie) ? ' is-partitioned' : ''}" data-index="${i}">
+      <div class="cookie-item${isSelected ? ' is-selected' : ''}${isPartitioned(cookie) ? ' is-partitioned' : ''}" data-index="${i}">
+        <input type="checkbox" class="row-select" aria-label="Select ${label}"${isSelected ? ' checked' : ''}>
         <span class="cookie-name" title="${name}">${label}</span>
         <span class="cookie-value" title="${escapeHtml(cookie.value)}">${escapeHtml(cookie.value)}</span>
+        <span class="cookie-meta${bytes > SIZE_WARNING_BYTES ? ' is-large' : ''}" title="${escapeHtml(`${expiry} · ${bytes} bytes`)}">${escapeHtml(shortExpiry(cookie, now))} · ${formatBytes(bytes)}</span>
         <span class="cookie-badges">${badges}</span>
         <span class="cookie-actions">
           <button class="btn-edit" title="Edit" aria-label="Edit ${label}">&#9998;</button>
@@ -213,16 +295,24 @@ function renderCookies() {
   }).join('');
 
   list.querySelectorAll<HTMLElement>('.cookie-item').forEach((item) => {
-    const cookie = filtered[parseInt(item.dataset.index!, 10)]!;
+    const cookie = shownCookies[parseInt(item.dataset.index!, 10)]!;
+    const id = cookieIdentity(cookie);
 
+    const box = item.querySelector<HTMLInputElement>('.row-select')!;
+    box.addEventListener('click', (e) => e.stopPropagation());
+    box.addEventListener('change', () => {
+      if (box.checked) selected.add(id);
+      else selected.delete(id);
+      item.classList.toggle('is-selected', box.checked);
+      renderSelection();
+    });
     item.querySelector('.btn-edit')!.addEventListener('click', (e) => {
       e.stopPropagation();
       openEditor(cookie);
     });
-    item.querySelector('.btn-copy')!.addEventListener('click', (e) => {
+    item.querySelector('.btn-copy')!.addEventListener('click', async (e) => {
       e.stopPropagation();
-      navigator.clipboard.writeText(cookie.value);
-      toast('Copied to clipboard');
+      toast(await copyText(cookie.value) ? 'Copied to clipboard' : 'Copy failed', {});
     });
     item.querySelector('.btn-delete')!.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -242,6 +332,21 @@ async function deleteCookie(cookie: CookieLike) {
   toast(`Deleted “${cookie.name}”`, { actionLabel: 'Undo', onAction: () => undoRemoval(res.removed) });
 }
 
+async function deleteSelected() {
+  const targets = allCookies.filter((c) => selected.has(cookieIdentity(c)));
+  if (targets.length === 0) return;
+  const n = targets.length;
+  const ok = await confirmDialog(`Delete ${plural(n, 'selected cookie')}?`, 'You can undo for 10 seconds.', `Delete ${n}`);
+  if (!ok) return;
+  const res = await send<RemoveResult>({ action: 'removeCookies', cookies: targets });
+  selected.clear();
+  await loadCookies();
+  const message = res.failed.length
+    ? `Deleted ${res.removed.length} of ${n} · ${res.failed.length} failed`
+    : `Deleted ${plural(res.removed.length, 'cookie')}`;
+  toast(message, { actionLabel: 'Undo', onAction: () => undoRemoval(res.removed) });
+}
+
 async function undoRemoval(snapshot: CookieLike[]) {
   const report = await send<WriteReport>({ action: 'restoreCookies', cookies: snapshot });
   await loadCookies();
@@ -252,6 +357,7 @@ async function undoRemoval(snapshot: CookieLike[]) {
 
 function setupActions() {
   el('btn-add').addEventListener('click', () => openEditor(null));
+  el('btn-import').addEventListener('click', () => openImportDialog());
 
   el('btn-delete-all').addEventListener('click', async () => {
     if (allCookies.length === 0) {
@@ -317,11 +423,15 @@ function setupEditor() {
   });
 }
 
-function onEditorChange() {
+function onEditorChange(e: Event) {
+  if ((e.target as HTMLElement).closest('#value-inspector')) return;
   confirmArmed = false;
   el('btn-editor-save').textContent = 'Save';
   el('editor-error').hidden = true;
   refreshValidation();
+  if ((e.target as HTMLElement).id === 'edit-value') {
+    renderInspector(el('value-inspector'), el<HTMLTextAreaElement>('edit-value').value);
+  }
 }
 
 function openEditor(cookie: CookieLike | null) {
@@ -373,6 +483,7 @@ function openEditor(cookie: CookieLike | null) {
   }
 
   refreshValidation();
+  renderInspector(el('value-inspector'), cookie?.value ?? '');
   el<HTMLDialogElement>('cookie-editor').showModal();
   (cookie ? el('edit-value') : input('edit-name')).focus();
 }
@@ -497,15 +608,34 @@ async function saveEditor(e: Event) {
 
 // Export menu
 
+/** Selected cookies if any are selected, otherwise the cookies the list shows. */
+function exportTargets(): { cookies: CookieLike[]; scope: string } {
+  if (selected.size) {
+    const cookies = allCookies.filter((c) => selected.has(cookieIdentity(c)));
+    return { cookies, scope: plural(cookies.length, 'selected cookie') };
+  }
+  if (shownCookies.length !== allCookies.length) {
+    return { cookies: shownCookies, scope: `the ${shownCookies.length} shown (of ${allCookies.length})` };
+  }
+  return { cookies: allCookies, scope: `all ${plural(allCookies.length, 'cookie')}` };
+}
+
 function setupExportMenu() {
   const btn = el('btn-export');
   const menu = el('export-menu');
+  el('export-rows').innerHTML = EXPORT_FORMATS.map((f) => `
+    <div class="export-row">
+      <span>${escapeHtml(f.label)}</span>
+      <button type="button" data-format="${f.id}" data-action="copy">Copy</button>
+      <button type="button" data-format="${f.id}" data-action="download">Download</button>
+    </div>`).join('');
 
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
     const rect = btn.getBoundingClientRect();
     menu.style.top = rect.bottom + 2 + 'px';
     menu.style.right = (document.body.clientWidth - rect.right) + 'px';
+    el('export-scope').textContent = `Exporting ${exportTargets().scope}`;
     menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
   });
 
@@ -513,18 +643,24 @@ function setupExportMenu() {
     menu.style.display = 'none';
   });
 
-  menu.querySelectorAll<HTMLElement>('button').forEach((item) => {
-    item.addEventListener('click', async () => {
-      const format = item.dataset.format!;
-      const response = await send<{ result: string }>({
-        action: 'exportCookies',
-        url: currentUrl,
-        format,
-      });
-      await navigator.clipboard.writeText(response.result);
-      toast(`Copied ${format.toUpperCase()} to clipboard`);
-      menu.style.display = 'none';
-    });
+  menu.addEventListener('click', async (e) => {
+    const button = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-format]');
+    if (!button) {
+      e.stopPropagation();
+      return;
+    }
+    const format = button.dataset.format as ExportFormat;
+    const info = EXPORT_FORMATS.find((f) => f.id === format)!;
+    const { cookies } = exportTargets();
+    const text = formatExport(format, cookies, currentUrl);
+    if (button.dataset.action === 'download') {
+      downloadText(exportFilename(format, currentDomain, new Date()), text, info.mime);
+      toast(`Downloaded ${info.label} · ${plural(cookies.length, 'cookie')}`);
+    } else if (await copyText(text)) {
+      toast(`Copied ${info.label} · ${plural(cookies.length, 'cookie')}`);
+    } else {
+      toast('Copy failed', { error: true });
+    }
   });
 }
 

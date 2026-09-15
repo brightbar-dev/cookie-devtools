@@ -14,6 +14,7 @@ Cookie DevTools does **not** collect, transmit, or share any user data. All data
 ## Data Storage
 - Cookie profiles are stored locally using `chrome.storage.local`.
 - The change monitor records nothing until you switch **Record** on in its tab. While it is on, each cookie change (name, value, domain, time) is kept in `chrome.storage.local` — for all sites, or only the one site you choose — up to the log size set in Settings. Clear it from the Monitor tab or Settings at any time.
+- Cookies you import are read from the text you paste or the file you choose, inside the extension; exports are copied to your clipboard or saved as a file on your device.
 - No data is sent to any server or third party.
 
 ## Contact

@@ -28,7 +28,9 @@ export function toNetscape(cookies: CookieLike[]): string {
     const path = c.path;
     const secure = c.secure ? 'TRUE' : 'FALSE';
     const expiry = c.expirationDate ? Math.floor(c.expirationDate) : 0;
-    lines.push(`${domain}\t${flag}\t${path}\t${secure}\t${expiry}\t${c.name}\t${c.value}`);
+    // curl's convention for HttpOnly cookies, so they survive a round trip.
+    const prefix = c.httpOnly ? '#HttpOnly_' : '';
+    lines.push(`${prefix}${domain}\t${flag}\t${path}\t${secure}\t${expiry}\t${c.name}\t${c.value}`);
   }
   return lines.join('\n');
 }
@@ -37,7 +39,12 @@ export function toCurl(cookies: CookieLike[], url?: string | null): string {
   if (cookies.length === 0) return '# No cookies found';
   const cookieStr = cookies.map((c) => `${c.name}=${c.value}`).join('; ');
   const targetUrl = url || 'https://example.com';
-  return `curl -b '${cookieStr}' '${targetUrl}'`;
+  return `curl -b ${shellQuote(cookieStr)} ${shellQuote(targetUrl)}`;
+}
+
+/** Single-quote for a POSIX shell; a ' inside becomes '\''. */
+export function shellQuote(str: string): string {
+  return `'${str.replace(/'/g, `'\\''`)}'`;
 }
 
 export function toHeaderString(cookies: CookieLike[]): string {

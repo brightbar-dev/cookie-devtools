@@ -62,6 +62,11 @@ describe('toNetscape', () => {
     expect(result).toContain('abc=def;ghi');
   });
 
+  it('marks HttpOnly cookies with the #HttpOnly_ prefix', () => {
+    const result = toNetscape([{ domain: 'example.com', path: '/', secure: true, expirationDate: 0, name: 'sid', value: 'x', httpOnly: true }]);
+    expect(result.split('\n')[3]).toBe('#HttpOnly_example.com\tFALSE\t/\tTRUE\t0\tsid\tx');
+  });
+
   it('handles empty name/value', () => {
     const result = toNetscape([{
       domain: '.example.com', path: '/', secure: false,
@@ -101,6 +106,11 @@ describe('toCurl', () => {
   it('preserves equals in value', () => {
     const result = toCurl([{ name: 'token', value: 'abc=def', domain: '', path: '', secure: false, httpOnly: false }], 'https://test.com');
     expect(result).toContain('token=abc=def');
+  });
+
+  it('quotes a single quote for the shell', () => {
+    const result = toCurl([{ name: 'q', value: "it's", domain: '', path: '', secure: false, httpOnly: false }], 'https://test.com');
+    expect(result).toBe("curl -b 'q=it'\\''s' 'https://test.com'");
   });
 
   it('handles unicode value', () => {
