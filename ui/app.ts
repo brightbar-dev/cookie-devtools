@@ -1,7 +1,7 @@
 // The cookie UI, mounted by the popup, the side panel and the DevTools panel. Each surface only says
 // which page to work on and when that page may have changed.
 import {
-  escapeHtml, formatTime, CAUSE_MAP, cookieBadges, cookieHost, filterCookies,
+  escapeHtml, formatTime, causeLabel, cookieBadges, cookieHost, filterCookies,
   toDatetimeLocal, fromDatetimeLocal, isPartitioned,
 } from '@/utils/cookies';
 import type { CookieLike } from '@/utils/cookies';
@@ -16,18 +16,19 @@ import {
 import type { MonitorSettings } from '@/utils/monitor';
 import {
   sortCookies, applyChips, chipCounts, shortExpiry, expiryLabel, formatBytes, cookieStats,
-  CHIPS, CHIP_LABELS, MAX_COOKIES_PER_DOMAIN,
+  CHIPS, chipLabel, MAX_COOKIES_PER_DOMAIN,
 } from '@/utils/list';
 import type { Chip, SortKey } from '@/utils/list';
-import { EXPORT_FORMATS, formatExport, exportFilename } from '@/utils/export';
+import { EXPORT_FORMATS, exportFormatLabel, formatExport, exportFilename } from '@/utils/export';
 import type { ExportFormat } from '@/utils/export';
 import { parseTarget, noTargetReason } from '@/utils/target';
 import type { BlockRule, ProtectRule } from '@/utils/rules';
 import type {
   RemoveResult, WriteReport, UpdateResult, LoadProfileResult, ChangeEntry, CookiesResult, BlockResult,
 } from '@/utils/messages';
+import { t, tp } from '@/utils/i18n';
 import {
-  el, input, send, plural, toast, describeWrite, confirmDialog, copyText, downloadText,
+  el, input, send, localize, toast, describeWrite, confirmDialog, copyText, downloadText,
 } from './dom';
 import { renderInspector } from './inspector';
 import { setupImportDialog, openImportDialog } from './import-dialog';
@@ -75,6 +76,7 @@ const liveEntries: ChangeEntry[] = [];
 export async function mountApp(root: HTMLElement, appHost: AppHost) {
   host = appHost;
   root.innerHTML = APP_MARKUP;
+  localize(document);
   document.body.classList.add(`mode-${host.mode}`);
   // The side panel and DevTools panel stay open, so they start on the live feed; the popup starts on
   // the saved log.
@@ -85,7 +87,7 @@ export async function mountApp(root: HTMLElement, appHost: AppHost) {
   const savedSort = (data.listSort || {}) as { key?: string; dir?: string };
   if (SORT_KEYS.includes(savedSort.key as SortKey)) sortKey = savedSort.key as SortKey;
   sortDir = savedSort.dir === 'desc' ? 'desc' : 'asc';
-  el('version').textContent = `v${browser.runtime.getManifest().version}`;
+  el('version').textContent = t('versionLabel', browser.runtime.getManifest().version);
 
   await refreshTarget();
 
@@ -193,7 +195,7 @@ function setupSidePanelButton() {
       : api.sidebarAction?.open();
     Promise.resolve(opening).then(
       () => window.close(),
-      (err) => toast(`Couldn’t open the side panel: ${(err as Error).message}`, { error: true }),
+      (err) => toast(t('toastSidePanelFailed', (err as Error).message), { error: true }),
     );
   });
 }
@@ -316,7 +318,7 @@ function setupListControls() {
 
   const chipBar = el('chip-bar');
   chipBar.innerHTML = CHIPS.map((chip) =>
-    `<button type="button" class="chip" data-chip="${chip}" aria-pressed="false">${escapeHtml(CHIP_LABELS[chip])} <span class="chip-count"></span></button>`,
+    `<button type="button" class="chip" data-chip="${chip}" aria-pressed="false">${escapeHtml(chipLabel(chip))} <span class="chip-count"></span></button>`,
   ).join('');
   chipBar.addEventListener('click', (e) => {
     const button = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-chip]');
@@ -357,8 +359,8 @@ function renderSortDirection() {
   const button = el('btn-sort-dir');
   const asc = sortDir === 'asc';
   button.textContent = asc ? '↑' : '↓';
-  button.title = asc ? 'Ascending' : 'Descending';
-  button.setAttribute('aria-label', `Sort direction: ${asc ? 'ascending' : 'descending'}`);
+  button.title = asc ? t('sortAscending') : t('sortDescending');
+  button.setAttribute('aria-label', asc ? t('sortDirectionAscending') : t('sortDirectionDescending'));
 }
 
 function saveSort() {
@@ -405,13 +407,12 @@ function renderStats() {
     box.title = '';
     return;
   }
-  const crowded = stats.crowdedDomains.length
-    ? ` · over ${MAX_COOKIES_PER_DOMAIN} on ${stats.crowdedDomains.join(', ')}`
-    : '';
-  box.textContent = `${formatBytes(stats.totalBytes)} total${crowded}`;
-  box.classList.toggle('is-warning', crowded !== '');
-  box.title = `Largest: ${stats.largest!.name || '(no name)'}, ${stats.largest!.bytes} bytes. ` +
-    `Browsers reject a cookie over ${MAX_NAME_VALUE_BYTES} bytes and keep at most ${MAX_COOKIES_PER_DOMAIN} per domain.`;
+  const crowded = stats.crowdedDomains.length > 0;
+  box.textContent = crowded
+    ? t('statsTotalCrowded', formatBytes(stats.totalBytes), MAX_COOKIES_PER_DOMAIN, stats.crowdedDomains.join(', '))
+    : t('statsTotal', formatBytes(stats.totalBytes));
+  box.classList.toggle('is-warning', crowded);
+  box.title = t('statsTitle', stats.largest!.name || t('noName'), stats.largest!.bytes, MAX_NAME_VALUE_BYTES, MAX_COOKIES_PER_DOMAIN);
 }
 
 function renderSelection() {
@@ -420,7 +421,7 @@ function renderSelection() {
   for (const id of [...selected]) if (!present.has(id)) selected.delete(id);
 
   el('selection-info').hidden = selected.size === 0;
-  el('selection-count').textContent = `${selected.size} selected`;
+  el('selection-count').textContent = t('selectionCount', selected.size);
 
   const shownIds = shownCookies.map((c) => cookieIdentity(c));
   const selectedShown = shownIds.filter((id) => selected.has(id)).length;
@@ -442,8 +443,8 @@ function renderCookies() {
   renderStats();
   renderSelection();
   el('cookie-count').textContent = shownCookies.length === allCookies.length
-    ? plural(allCookies.length, 'cookie')
-    : `${shownCookies.length} of ${plural(allCookies.length, 'cookie')}`;
+    ? tp('cookieCount', allCookies.length)
+    : tp('cookieCountShown', allCookies.length, shownCookies.length);
 
   if (shownCookies.length === 0) {
     list.innerHTML = '';
@@ -464,26 +465,27 @@ function renderCookies() {
     const isProtected = protectedIds.has(id);
     const bytes = cookieSize(cookie.name, cookie.value);
     const badges = [
-      ...(isProtected ? [{ label: 'Lock', kind: 'protected', title: 'Protected — put back whenever a site changes or deletes it' }] : []),
+      ...(isProtected ? [{ label: t('badgeLock'), kind: 'protected', title: t('badgeLockTitle') }] : []),
       ...cookieBadges(cookie),
     ].map((b) => `<span class="badge badge-${escapeHtml(b.kind)}" title="${escapeHtml(b.title)}">${escapeHtml(b.label)}</span>`).join('');
     const name = escapeHtml(cookie.name);
-    const label = name || '(no name)';
+    const rawLabel = cookie.name || t('noName');
+    const label = escapeHtml(rawLabel);
     const expiry = cookie.session || !cookie.expirationDate
-      ? 'Session cookie — removed when the browser closes'
-      : `Expires ${new Date(cookie.expirationDate * 1000).toLocaleString()} (${expiryLabel(cookie, now)})`;
+      ? t('rowSessionTitle')
+      : t('rowExpiresTitle', new Date(cookie.expirationDate * 1000).toLocaleString(), expiryLabel(cookie, now));
 
     return `
       <div class="cookie-item${isSelected ? ' is-selected' : ''}${isPartitioned(cookie) ? ' is-partitioned' : ''}${isProtected ? ' is-protected' : ''}" data-index="${i}" role="listitem" tabindex="${id === tabStop ? 0 : -1}">
-        <input type="checkbox" class="row-select" aria-label="Select ${label}"${isSelected ? ' checked' : ''}>
+        <input type="checkbox" class="row-select" aria-label="${escapeHtml(t('rowSelectLabel', rawLabel))}"${isSelected ? ' checked' : ''}>
         <span class="cookie-name" title="${name}">${label}</span>
         <span class="cookie-value" title="${escapeHtml(cookie.value)}">${escapeHtml(cookie.value)}</span>
-        <span class="cookie-meta${bytes > SIZE_WARNING_BYTES ? ' is-large' : ''}" title="${escapeHtml(`${expiry} · ${bytes} bytes`)}">${escapeHtml(shortExpiry(cookie, now))} · ${formatBytes(bytes)}</span>
+        <span class="cookie-meta${bytes > SIZE_WARNING_BYTES ? ' is-large' : ''}" title="${escapeHtml(t('rowMetaTitle', expiry, bytes))}">${escapeHtml(shortExpiry(cookie, now))} · ${formatBytes(bytes)}</span>
         <span class="cookie-badges">${badges}</span>
         <span class="cookie-actions">
-          <button class="btn-edit" title="Edit" aria-label="Edit ${label}">&#9998;</button>
-          <button class="btn-copy" title="Copy value" aria-label="Copy value of ${label}">&#10697;</button>
-          <button class="btn-delete" title="Delete" aria-label="Delete ${label}">&#10005;</button>
+          <button class="btn-edit" title="${escapeHtml(t('rowEdit'))}" aria-label="${escapeHtml(t('rowEditLabel', rawLabel))}">&#9998;</button>
+          <button class="btn-copy" title="${escapeHtml(t('rowCopy'))}" aria-label="${escapeHtml(t('rowCopyLabel', rawLabel))}">&#10697;</button>
+          <button class="btn-delete" title="${escapeHtml(t('actionDelete'))}" aria-label="${escapeHtml(t('rowDeleteLabel', rawLabel))}">&#10005;</button>
         </span>
       </div>
     `;
@@ -508,7 +510,7 @@ function renderCookies() {
     });
     item.querySelector('.btn-copy')!.addEventListener('click', async (e) => {
       e.stopPropagation();
-      toast(await copyText(cookie.value) ? 'Copied to clipboard' : 'Copy failed');
+      toast(await copyText(cookie.value) ? t('toastCopied') : t('copyFailed'));
     });
     item.querySelector('.btn-delete')!.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -525,15 +527,15 @@ function emptyStateHtml(): string {
     return `<h3>${escapeHtml(reason.title)}</h3><p>${escapeHtml(reason.detail)}</p>`;
   }
   if (allCookies.length) {
-    return `<h3>No cookies match</h3>
-      <p>Nothing on ${escapeHtml(currentDomain)} matches the filter and chips you picked.</p>
-      <div class="empty-actions"><button type="button" class="action-btn" data-empty="clear-filters">Clear filters</button></div>`;
+    return `<h3>${escapeHtml(t('emptyNoMatchTitle'))}</h3>
+      <p>${escapeHtml(t('emptyNoMatchDetail', currentDomain))}</p>
+      <div class="empty-actions"><button type="button" class="action-btn" data-empty="clear-filters">${escapeHtml(t('emptyClearFilters'))}</button></div>`;
   }
-  return `<h3>No cookies on ${escapeHtml(currentDomain)} yet</h3>
-    <p>Sites set cookies as you sign in and browse, and they appear here as it happens. You can also add one or import an export.</p>
+  return `<h3>${escapeHtml(t('emptyNoCookiesTitle', currentDomain))}</h3>
+    <p>${escapeHtml(t('emptyNoCookiesDetail'))}</p>
     <div class="empty-actions">
-      <button type="button" class="action-btn" data-empty="add">+ Add cookie</button>
-      <button type="button" class="action-btn" data-empty="import">Import</button>
+      <button type="button" class="action-btn" data-empty="add">${escapeHtml(t('emptyAddCookie'))}</button>
+      <button type="button" class="action-btn" data-empty="import">${escapeHtml(t('actionImport'))}</button>
     </div>`;
 }
 
@@ -542,11 +544,11 @@ async function deleteCookie(cookie: CookieLike) {
   const res = await send<RemoveResult>({ action: 'removeCookies', cookies: [cookie] });
   await loadCookies();
   if (res.failed.length) {
-    toast(`Couldn’t delete “${cookie.name}”: ${res.failed[0]!.error}`, { error: true });
+    toast(t('toastDeleteFailed', cookie.name, res.failed[0]!.error), { error: true });
     return;
   }
-  toast(`Deleted “${cookie.name}”${wasProtected ? ' and ended its protection' : ''}`, {
-    actionLabel: 'Undo',
+  toast(wasProtected ? t('toastDeletedUnprotected', cookie.name) : t('toastDeleted', cookie.name), {
+    actionLabel: t('actionUndo'),
     onAction: () => undoRemoval(res.removed),
   });
 }
@@ -555,21 +557,21 @@ async function deleteSelected() {
   const targets = allCookies.filter((c) => selected.has(cookieIdentity(c)));
   if (targets.length === 0) return;
   const n = targets.length;
-  const ok = await confirmDialog(`Delete ${plural(n, 'selected cookie')}?`, 'You can undo for 10 seconds.', `Delete ${n}`);
+  const ok = await confirmDialog(tp('confirmDeleteSelected', n), t('confirmUndoDetail'), t('confirmDeleteCount', n));
   if (!ok) return;
   const res = await send<RemoveResult>({ action: 'removeCookies', cookies: targets });
   selected.clear();
   await loadCookies();
   const message = res.failed.length
-    ? `Deleted ${res.removed.length} of ${n} · ${res.failed.length} failed`
-    : `Deleted ${plural(res.removed.length, 'cookie')}`;
-  toast(message, { actionLabel: 'Undo', onAction: () => undoRemoval(res.removed) });
+    ? t('toastDeletedPartial', res.removed.length, n, res.failed.length)
+    : tp('toastDeletedCount', res.removed.length);
+  toast(message, { actionLabel: t('actionUndo'), onAction: () => undoRemoval(res.removed) });
 }
 
 async function undoRemoval(snapshot: CookieLike[]) {
   const report = await send<WriteReport>({ action: 'restoreCookies', cookies: snapshot });
   await loadCookies();
-  toast(describeWrite('Restored', report), { error: report.failed.length > 0 });
+  toast(describeWrite(tp('writeRestored', report.written.length), report), { error: report.failed.length > 0 });
 }
 
 // Actions
@@ -580,23 +582,23 @@ function setupActions() {
 
   el('btn-delete-all').addEventListener('click', async () => {
     if (allCookies.length === 0) {
-      toast('No cookies to delete');
+      toast(t('toastNothingToDelete'));
       return;
     }
     const snapshot = allCookies.slice();
     const n = snapshot.length;
     const ok = await confirmDialog(
-      `Delete all ${plural(n, 'cookie')} for ${currentDomain}?`,
-      'Sites that rely on them will sign you out or forget settings. You can undo for 10 seconds.',
-      `Delete ${n}`,
+      tp('confirmDeleteAll', n, currentDomain),
+      t('confirmDeleteAllDetail'),
+      t('confirmDeleteCount', n),
     );
     if (!ok) return;
     const res = await send<RemoveResult>({ action: 'removeCookies', cookies: snapshot });
     await loadCookies();
     const message = res.failed.length
-      ? `Deleted ${res.removed.length} of ${n} · ${res.failed.length} failed`
-      : `Deleted ${plural(res.removed.length, 'cookie')}`;
-    toast(message, { actionLabel: 'Undo', onAction: () => undoRemoval(res.removed) });
+      ? t('toastDeletedPartial', res.removed.length, n, res.failed.length)
+      : tp('toastDeletedCount', res.removed.length);
+    toast(message, { actionLabel: t('actionUndo'), onAction: () => undoRemoval(res.removed) });
   });
 
   el('btn-theme').addEventListener('click', async () => {
@@ -636,31 +638,31 @@ function setupRules() {
 function renderRulesPill() {
   const pill = el<HTMLButtonElement>('btn-rules');
   const parts: string[] = [];
-  if (protectedHere.length) parts.push(`${protectedHere.length} protected`);
-  if (blockedHere.length) parts.push(`${blockedHere.length} blocked`);
+  if (protectedHere.length) parts.push(t('rulesPillProtected', protectedHere.length));
+  if (blockedHere.length) parts.push(t('rulesPillBlocked', blockedHere.length));
   pill.hidden = parts.length === 0;
   pill.textContent = parts.join(' · ');
 }
 
 function renderRulesDialog() {
-  el('rules-site').textContent = currentDomain;
+  el('rules-title').textContent = t('rulesTitle', currentDomain);
   const protectRows = protectedHere.map((r, i) => `
     <li>
-      <span class="rule-kind is-protect">Protected</span>
+      <span class="rule-kind is-protect">${escapeHtml(t('ruleProtected'))}</span>
       <span class="imp-name" title="${escapeHtml(r.cookie.name)}">${escapeHtml(r.cookie.name)}</span>
       <span class="imp-domain">${escapeHtml(r.cookie.domain)}</span>
-      <button type="button" class="action-btn" data-rule="protect" data-index="${i}">Unprotect</button>
+      <button type="button" class="action-btn" data-rule="protect" data-index="${i}">${escapeHtml(t('actionUnprotect'))}</button>
     </li>`).join('');
   const blockRows = blockedHere.map((r, i) => `
     <li>
-      <span class="rule-kind is-block">Blocked</span>
+      <span class="rule-kind is-block">${escapeHtml(t('ruleBlocked'))}</span>
       <span class="imp-name" title="${escapeHtml(r.name)}">${escapeHtml(r.name)}</span>
       <span class="imp-domain">${escapeHtml(r.domain)}</span>
-      <button type="button" class="action-btn" data-rule="block" data-index="${i}">Unblock</button>
+      <button type="button" class="action-btn" data-rule="block" data-index="${i}">${escapeHtml(t('actionUnblock'))}</button>
     </li>`).join('');
   el('rules-body').innerHTML = protectRows || blockRows
     ? `<ul class="import-list rules-list">${protectRows}${blockRows}</ul>`
-    : '<p class="dialog-sub">No protected or blocked cookies for this site.</p>';
+    : `<p class="dialog-sub">${escapeHtml(t('rulesNone'))}</p>`;
 }
 
 // Cookie editor
@@ -704,20 +706,20 @@ async function blockEditingCookie() {
   closeEditor();
   const site = cookieHost(cookie.domain);
   const ok = await confirmDialog(
-    `Block “${cookie.name}” on ${site}?`,
-    'It is deleted now, and again whenever a site sets it. You can undo, or unblock it any time.',
-    'Block',
+    t('confirmBlock', cookie.name, site),
+    t('confirmBlockDetail'),
+    t('actionBlock'),
   );
   if (!ok) return;
   const res = await send<BlockResult>({ action: 'blockCookie', cookie });
   await loadCookies();
-  toast(`Blocked “${cookie.name}” on ${site}`, {
-    actionLabel: 'Undo',
+  toast(t('toastBlocked', cookie.name, site), {
+    actionLabel: t('actionUndo'),
     onAction: async () => {
       await send({ action: 'unblockCookie', id: res.rule.id });
       const report = await send<WriteReport>({ action: 'restoreCookies', cookies: res.removed });
       await loadCookies();
-      toast(describeWrite('Unblocked — restored', report), { error: report.failed.length > 0 });
+      toast(describeWrite(tp('writeUnblockedRestored', report.written.length), report), { error: report.failed.length > 0 });
     },
   });
 }
@@ -726,7 +728,7 @@ function onEditorChange(e: Event) {
   const target = e.target as HTMLElement;
   if (target.closest('#value-inspector') || target.id === 'edit-protect') return;
   confirmArmed = false;
-  el('btn-editor-save').textContent = 'Save';
+  el('btn-editor-save').textContent = t('actionSave');
   el('editor-error').hidden = true;
   refreshValidation();
   if (target.id === 'edit-value') {
@@ -738,9 +740,9 @@ function openEditor(cookie: CookieLike | null) {
   editingCookie = cookie;
   editorSubmitted = false;
   confirmArmed = false;
-  el('btn-editor-save').textContent = 'Save';
+  el('btn-editor-save').textContent = t('actionSave');
   el('editor-error').hidden = true;
-  el('editor-title').textContent = cookie ? 'Edit Cookie' : 'Add Cookie';
+  el('editor-title').textContent = cookie ? t('editorTitleEdit') : t('editorTitleAdd');
   el('btn-editor-block').hidden = !cookie;
   input('edit-protect').checked = !!cookie && protectedIds.has(cookieIdentity(cookie));
 
@@ -776,9 +778,9 @@ function openEditor(cookie: CookieLike | null) {
   const partition = el('edit-partition');
   const pk = cookie?.partitionKey;
   if (pk?.topLevelSite) {
-    partition.textContent = `Partitioned (CHIPS) under ${pk.topLevelSite}` +
-      (pk.hasCrossSiteAncestor ? ', set from a cross-site frame' : '') +
-      '. Saving keeps it in the same partition.';
+    partition.textContent = pk.hasCrossSiteAncestor
+      ? t('editorPartitionedCrossSite', pk.topLevelSite)
+      : t('editorPartitioned', pk.topLevelSite);
     partition.hidden = false;
   } else {
     partition.hidden = true;
@@ -842,7 +844,7 @@ function refreshValidation(): Issue[] {
 
   const size = cookieSize(draft.name, draft.value);
   const meter = el('edit-size');
-  meter.textContent = `${size.toLocaleString()} / ${MAX_NAME_VALUE_BYTES.toLocaleString()} bytes`;
+  meter.textContent = t('editorSize', size.toLocaleString(), MAX_NAME_VALUE_BYTES.toLocaleString());
   meter.className = 'size-meter' + (size > MAX_NAME_VALUE_BYTES ? ' is-error' : size > SIZE_WARNING_BYTES ? ' is-warning' : '');
   return issues;
 }
@@ -860,7 +862,7 @@ async function saveEditor(e: Event) {
   }
   if (needsConfirmation(issues) && !confirmArmed) {
     confirmArmed = true;
-    saveBtn.textContent = editingCookie ? 'Save and delete cookie' : 'Save anyway';
+    saveBtn.textContent = editingCookie ? t('editorSaveAndDelete') : t('editorSaveAnyway');
     return;
   }
 
@@ -895,20 +897,19 @@ async function saveEditor(e: Event) {
 
   if (res.error) {
     const box = el('editor-error');
-    box.textContent = `The browser rejected this cookie: ${res.error} ` +
-      (original ? 'The original cookie is unchanged.' : 'Nothing was added.');
+    box.textContent = original ? t('editorRejectedKept', res.error) : t('editorRejectedNotAdded', res.error);
     box.hidden = false;
     confirmArmed = false;
-    saveBtn.textContent = 'Save';
+    saveBtn.textContent = t('actionSave');
     return;
   }
 
   closeEditor();
-  let message = res.deleted
-    ? `Deleted “${cookie.name}” (expiry in the past)`
-    : original ? 'Cookie updated' : 'Cookie added';
-  if (!res.deleted && protect && !wasProtected) message += ' and protected';
-  if (!res.deleted && !protect && wasProtected) message += ' — no longer protected';
+  let message: string;
+  if (res.deleted) message = t('toastDeletedPastExpiry', cookie.name);
+  else if (protect && !wasProtected) message = original ? t('toastCookieUpdatedProtected') : t('toastCookieAddedProtected');
+  else if (!protect && wasProtected) message = t('toastCookieUpdatedUnprotected');
+  else message = original ? t('toastCookieUpdated') : t('toastCookieAdded');
   toast(res.warning ?? message, { error: !!res.warning });
   loadCookies();
 }
@@ -919,12 +920,12 @@ async function saveEditor(e: Event) {
 function exportTargets(): { cookies: CookieLike[]; scope: string } {
   if (selected.size) {
     const cookies = allCookies.filter((c) => selected.has(cookieIdentity(c)));
-    return { cookies, scope: plural(cookies.length, 'selected cookie') };
+    return { cookies, scope: tp('exportScopeSelected', cookies.length) };
   }
   if (shownCookies.length !== allCookies.length) {
-    return { cookies: shownCookies, scope: `the ${shownCookies.length} shown (of ${allCookies.length})` };
+    return { cookies: shownCookies, scope: t('exportScopeShown', shownCookies.length, allCookies.length) };
   }
-  return { cookies: allCookies, scope: `all ${plural(allCookies.length, 'cookie')}` };
+  return { cookies: allCookies, scope: tp('exportScopeAll', allCookies.length) };
 }
 
 function setupExportMenu() {
@@ -932,9 +933,9 @@ function setupExportMenu() {
   const menu = el('export-menu');
   el('export-rows').innerHTML = EXPORT_FORMATS.map((f) => `
     <div class="export-row">
-      <span>${escapeHtml(f.label)}</span>
-      <button type="button" data-format="${f.id}" data-action="copy">Copy</button>
-      <button type="button" data-format="${f.id}" data-action="download">Download</button>
+      <span>${escapeHtml(exportFormatLabel(f.id))}</span>
+      <button type="button" data-format="${f.id}" data-action="copy">${escapeHtml(t('actionCopy'))}</button>
+      <button type="button" data-format="${f.id}" data-action="download">${escapeHtml(t('actionDownload'))}</button>
     </div>`).join('');
 
   btn.addEventListener('click', (e) => {
@@ -942,7 +943,7 @@ function setupExportMenu() {
     const rect = btn.getBoundingClientRect();
     menu.style.top = rect.bottom + 2 + 'px';
     menu.style.right = (document.body.clientWidth - rect.right) + 'px';
-    el('export-scope').textContent = `Exporting ${exportTargets().scope}`;
+    el('export-scope').textContent = exportTargets().scope;
     menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
   });
 
@@ -962,11 +963,11 @@ function setupExportMenu() {
     const text = formatExport(format, cookies, currentUrl);
     if (button.dataset.action === 'download') {
       downloadText(exportFilename(format, currentDomain, new Date()), text, info.mime);
-      toast(`Downloaded ${info.label} · ${plural(cookies.length, 'cookie')}`);
+      toast(tp('toastDownloaded', cookies.length, exportFormatLabel(format)));
     } else if (await copyText(text)) {
-      toast(`Copied ${info.label} · ${plural(cookies.length, 'cookie')}`);
+      toast(tp('toastCopiedFormat', cookies.length, exportFormatLabel(format)));
     } else {
-      toast('Copy failed', { error: true });
+      toast(t('copyFailed'), { error: true });
     }
   });
 }
@@ -988,7 +989,7 @@ function setupMonitor() {
   el('btn-clear-log').addEventListener('click', async () => {
     await send({ action: 'clearChangeLog' });
     if (monitorView === 'saved') renderEntries([], savedEmptyText());
-    toast('Log cleared');
+    toast(t('toastLogCleared'));
   });
 
   el('monitor-view-live').addEventListener('click', () => setMonitorView('live'));
@@ -1021,9 +1022,9 @@ function renderMonitorControls() {
   const { recording, scope, site } = monitorSettings;
   input('monitor-record').checked = recording;
 
-  const options = [{ value: 'all', label: 'All sites' }];
-  if (scope === 'site' && site && site !== currentDomain) options.push({ value: `site:${site}`, label: `Only ${site}` });
-  if (currentDomain) options.push({ value: `site:${currentDomain}`, label: `Only ${currentDomain}` });
+  const options = [{ value: 'all', label: t('monitorScopeAll') }];
+  if (scope === 'site' && site && site !== currentDomain) options.push({ value: `site:${site}`, label: t('monitorScopeOnly', site) });
+  if (currentDomain) options.push({ value: `site:${currentDomain}`, label: t('monitorScopeOnly', currentDomain) });
   const select = el<HTMLSelectElement>('monitor-scope');
   select.innerHTML = options
     .map((o) => `<option value="${escapeHtml(o.value)}">${escapeHtml(o.label)}</option>`)
@@ -1031,14 +1032,10 @@ function renderMonitorControls() {
   select.value = scope === 'site' ? `site:${site}` : 'all';
 
   const status = el('monitor-status');
-  status.textContent = recording ? '● Recording' : 'Off';
+  status.textContent = recording ? t('monitorStatusRecording') : t('monitorStatusOff');
   status.classList.toggle('is-recording', recording);
 
-  const what = 'each cookie change (name, value, domain, time) is kept in this browser’s extension storage — ' +
-    `newest ${maxLog} — and never leaves your device.`;
-  el('monitor-note').textContent = recording
-    ? `While recording, ${what}`
-    : `Recording is off, so nothing is logged. When on, ${what}`;
+  el('monitor-note').textContent = recording ? t('monitorNoteRecording', maxLog) : t('monitorNoteOff', maxLog);
 }
 
 async function loadChangeLog() {
@@ -1051,18 +1048,18 @@ async function loadChangeLog() {
 
 function savedEmptyText(): string {
   return monitorSettings.recording
-    ? 'Recording. Changes show up here as sites set, update and expire cookies.'
-    : 'Recording is off. Turn on Record to keep a log of cookie changes across visits — set, overwritten, expired and evicted.';
+    ? t('monitorSavedEmptyRecording')
+    : t('monitorSavedEmptyOff');
 }
 
 function renderMonitorLists() {
   el('monitor-view-live').setAttribute('aria-selected', String(monitorView === 'live'));
   el('monitor-view-saved').setAttribute('aria-selected', String(monitorView === 'saved'));
-  el('live-site').textContent = currentDomain || 'this page';
+  el('monitor-view-live').textContent = currentDomain ? t('monitorLiveOn', currentDomain) : t('monitorLiveOnThisPage');
   if (monitorView === 'live') {
     renderEntries(liveEntries, currentDomain
-      ? `Watching ${currentDomain}. Changes show up here as they happen; this view keeps nothing once closed.`
-      : 'Open a web page to watch its cookies change.');
+      ? t('monitorLiveWatching', currentDomain)
+      : t('monitorLiveNoPage'));
     return;
   }
   void send<{ changeLog: ChangeEntry[] }>({ action: 'getChangeLog' }).then((response) => {
@@ -1086,12 +1083,12 @@ function renderEntries(log: ChangeEntry[], emptyText: string) {
     const isRemoved = entry.removed;
     const iconClass = isRemoved ? 'removed' : 'added';
     const icon = isRemoved ? '−' : '+';
-    const cause = CAUSE_MAP[entry.cause] || entry.cause;
+    const cause = causeLabel(entry.cause);
     const value = entry.cookie.value ?? '';
 
     return `
       <div class="change-entry">
-        <span class="change-icon ${iconClass}" aria-label="${isRemoved ? 'Removed' : 'Set'}">${icon}</span>
+        <span class="change-icon ${iconClass}" aria-label="${escapeHtml(isRemoved ? t('changeRemoved') : t('changeSet'))}">${icon}</span>
         <div class="change-details">
           <span class="change-name">${escapeHtml(entry.cookie.name)}</span>
           <span class="change-cause">${escapeHtml(entry.cookie.domain)} — ${escapeHtml(cause)}</span>
@@ -1108,13 +1105,13 @@ function renderEntries(log: ChangeEntry[], emptyText: string) {
 function setupProfiles() {
   el('btn-save-profile').addEventListener('click', async () => {
     const name = input('profile-name').value.trim();
-    if (!name) { toast('Enter a profile name'); return; }
+    if (!name) { toast(t('toastEnterProfileName')); return; }
     const response = await send<{ count: number }>({
       action: 'saveProfile',
       name,
       url: currentUrl,
     });
-    toast(`Saved “${name}” (${plural(response.count, 'cookie')})`);
+    toast(tp('toastProfileSaved', response.count, name));
     input('profile-name').value = '';
     loadProfiles();
   });
@@ -1141,10 +1138,10 @@ async function loadProfiles() {
     return `
       <div class="profile-item" data-name="${safe}">
         <span class="profile-name">${safe}</span>
-        <span class="profile-meta">${plural(p.count, 'cookie')} · ${date}</span>
+        <span class="profile-meta">${escapeHtml(tp('profileMeta', p.count, date))}</span>
         <span class="profile-actions">
-          <button class="action-btn btn-load-profile" aria-label="Load profile ${safe}">Load</button>
-          <button class="action-btn danger btn-delete-profile" title="Delete profile" aria-label="Delete profile ${safe}">&#10005;</button>
+          <button class="action-btn btn-load-profile" aria-label="${escapeHtml(t('profileLoadLabel', name))}">${escapeHtml(t('actionLoad'))}</button>
+          <button class="action-btn danger btn-delete-profile" title="${escapeHtml(t('profileDeleteTitle'))}" aria-label="${escapeHtml(t('profileDeleteLabel', name))}">&#10005;</button>
         </span>
       </div>
     `;
@@ -1155,25 +1152,25 @@ async function loadProfiles() {
     item.querySelector('.btn-load-profile')!.addEventListener('click', async () => {
       const res = await send<LoadProfileResult>({ action: 'loadProfile', name, clearFirst: true });
       if (res.error) {
-        toast('Error: ' + res.error, { error: true });
+        toast(t('toastError', res.error), { error: true });
         return;
       }
       await loadCookies();
-      toast(describeWrite(`Loaded “${name}”:`, res), {
-        actionLabel: 'Undo',
+      toast(describeWrite(tp('writeLoaded', res.written.length, name), res), {
+        actionLabel: t('actionUndo'),
         onAction: async () => {
           await send<RemoveResult>({ action: 'removeCookies', cookies: res.written });
           const report = await send<WriteReport>({ action: 'restoreCookies', cookies: res.previous });
           await loadCookies();
-          toast(describeWrite('Undone — restored', report), { error: report.failed.length > 0 });
+          toast(describeWrite(tp('writeUndoneRestored', report.written.length), report), { error: report.failed.length > 0 });
         },
       });
     });
     item.querySelector('.btn-delete-profile')!.addEventListener('click', async () => {
-      const ok = await confirmDialog(`Delete profile “${name}”?`, 'The saved cookies in it are removed from this browser.', 'Delete');
+      const ok = await confirmDialog(t('confirmDeleteProfile', name), t('confirmDeleteProfileDetail'), t('actionDelete'));
       if (!ok) return;
       await send({ action: 'deleteProfile', name });
-      toast(`Deleted profile “${name}”`);
+      toast(t('toastProfileDeleted', name));
       loadProfiles();
     });
   });

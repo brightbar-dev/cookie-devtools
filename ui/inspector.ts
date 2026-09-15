@@ -2,12 +2,21 @@
 import { decodeValue } from '@/utils/decode';
 import type { JwtView } from '@/utils/decode';
 import { escapeHtml } from '@/utils/cookies';
+import { t } from '@/utils/i18n';
 import { copyText } from './dom';
 
 type ViewId = 'jwt' | 'json' | 'url' | 'base64';
 
 const VIEW_ORDER: ViewId[] = ['jwt', 'json', 'url', 'base64'];
-const VIEW_LABELS: Record<ViewId, string> = { jwt: 'JWT', json: 'JSON', url: 'URL-decoded', base64: 'Base64' };
+
+function viewLabel(view: ViewId): string {
+  switch (view) {
+    case 'jwt': return t('inspectorViewJwt');
+    case 'json': return t('inspectorViewJson');
+    case 'url': return t('inspectorViewUrl');
+    case 'base64': return t('inspectorViewBase64');
+  }
+}
 
 // The view last picked stays picked while it applies, as the value is edited or another cookie opened.
 let preferred: ViewId | null = null;
@@ -17,25 +26,25 @@ function block(title: string, text: string, copyIndex: number): string {
     <div class="inspector-block">
       <div class="inspector-block-head">
         <h3>${escapeHtml(title)}</h3>
-        <button type="button" class="copy-btn" data-copy="${copyIndex}">Copy</button>
+        <button type="button" class="copy-btn" data-copy="${copyIndex}">${escapeHtml(t('actionCopy'))}</button>
       </div>
       <pre>${escapeHtml(text)}</pre>
     </div>`;
 }
 
 function jwtPanel(jwt: JwtView, copies: string[]): string {
-  const exp = jwt.times.find((t) => t.claim === 'exp');
-  const nbf = jwt.times.find((t) => t.claim === 'nbf');
-  let status = '<p class="jwt-status">No expiry (exp) claim</p>';
-  if (jwt.expired && exp) status = `<p class="jwt-status is-expired">Expired ${escapeHtml(exp.relative)}</p>`;
-  else if (jwt.notYetValid && nbf) status = `<p class="jwt-status is-pending">Not valid until ${escapeHtml(nbf.relative)}</p>`;
-  else if (exp) status = `<p class="jwt-status is-valid">Not expired — expires ${escapeHtml(exp.relative)}</p>`;
+  const exp = jwt.times.find((time) => time.claim === 'exp');
+  const nbf = jwt.times.find((time) => time.claim === 'nbf');
+  let status = `<p class="jwt-status">${escapeHtml(t('jwtNoExpiry'))}</p>`;
+  if (jwt.expired && exp) status = `<p class="jwt-status is-expired">${escapeHtml(t('jwtExpired', exp.relative))}</p>`;
+  else if (jwt.notYetValid && nbf) status = `<p class="jwt-status is-pending">${escapeHtml(t('jwtNotYetValid', nbf.relative))}</p>`;
+  else if (exp) status = `<p class="jwt-status is-valid">${escapeHtml(t('jwtValid', exp.relative))}</p>`;
 
-  const rows = jwt.times.map((t) => `
+  const rows = jwt.times.map((time) => `
     <tr>
-      <th scope="row">${t.claim}</th>
-      <td title="${escapeHtml(t.iso)}">${escapeHtml(new Date(t.seconds * 1000).toLocaleString())}</td>
-      <td class="jwt-relative">${escapeHtml(t.relative)}</td>
+      <th scope="row">${time.claim}</th>
+      <td title="${escapeHtml(time.iso)}">${escapeHtml(new Date(time.seconds * 1000).toLocaleString())}</td>
+      <td class="jwt-relative">${escapeHtml(time.relative)}</td>
     </tr>`).join('');
 
   const header = JSON.stringify(jwt.header, null, 2);
@@ -44,9 +53,9 @@ function jwtPanel(jwt: JwtView, copies: string[]): string {
   return `
     ${status}
     ${rows ? `<table class="jwt-claims">${rows}</table>` : ''}
-    ${block('Payload', payload, 1)}
-    ${block('Header', header, 0)}
-    <p class="inspector-note">Decoded only — the signature is not verified.</p>`;
+    ${block(t('inspectorPayload'), payload, 1)}
+    ${block(t('inspectorHeader'), header, 0)}
+    <p class="inspector-note">${escapeHtml(t('inspectorNotVerified'))}</p>`;
 }
 
 export function renderInspector(container: HTMLElement, value: string): void {
@@ -68,25 +77,25 @@ export function renderInspector(container: HTMLElement, value: string): void {
       break;
     case 'json':
       copies.push(views.json!);
-      panel = block('Pretty-printed JSON', views.json!, 0);
+      panel = block(t('inspectorPrettyJson'), views.json!, 0);
       break;
     case 'url':
       copies.push(views.url!);
-      panel = block('URL-decoded', views.url!, 0);
+      panel = block(t('inspectorViewUrl'), views.url!, 0);
       break;
     case 'base64':
       copies.push(views.base64!.text);
-      panel = block(`${views.base64!.variant}-decoded`, views.base64!.text, 0);
+      panel = block(views.base64!.variant === 'Base64URL' ? t('inspectorBase64UrlDecoded') : t('inspectorBase64Decoded'), views.base64!.text, 0);
       break;
   }
 
   const tabs = available
-    .map((v) => `<button type="button" role="tab" data-view="${v}" aria-selected="${v === current}">${VIEW_LABELS[v]}</button>`)
+    .map((v) => `<button type="button" role="tab" data-view="${v}" aria-selected="${v === current}">${escapeHtml(viewLabel(v))}</button>`)
     .join('');
   container.innerHTML = `
-    <div class="inspector-tabs" role="tablist" aria-label="Decoded value">
+    <div class="inspector-tabs" role="tablist" aria-label="${escapeHtml(t('inspectorTabsLabel'))}">
       ${tabs}
-      <span class="inspector-label">Decoded · read-only</span>
+      <span class="inspector-label">${escapeHtml(t('inspectorReadOnly'))}</span>
     </div>
     <div class="inspector-panel" role="tabpanel">${panel}</div>`;
   container.hidden = false;
@@ -104,8 +113,8 @@ export function renderInspector(container: HTMLElement, value: string): void {
     if (copy) {
       // Feedback in place: a toast would sit behind the modal editor.
       const ok = await copyText(copies[Number(copy.dataset.copy)] ?? '');
-      copy.textContent = ok ? 'Copied' : 'Copy failed';
-      window.setTimeout(() => { copy.textContent = 'Copy'; }, 1200);
+      copy.textContent = ok ? t('inspectorCopied') : t('copyFailed');
+      window.setTimeout(() => { copy.textContent = t('actionCopy'); }, 1200);
     }
   };
 }

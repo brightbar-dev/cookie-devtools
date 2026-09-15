@@ -1,4 +1,5 @@
 import { domainAppliesToHost } from '@/utils/cookies';
+import { t } from '@/utils/i18n';
 import type { CookieLike } from '@/utils/cookies';
 import type { ChangeEntry, Failure, WriteReport } from '@/utils/messages';
 import {
@@ -266,14 +267,14 @@ export default defineBackground(() => {
     }
     // A past expiry makes set() delete the cookie and return nothing.
     const deleted = isExpired(cookie, Date.now() / 1000);
-    if (!written && !deleted) return { error: 'The browser did not store the cookie.' };
+    if (!written && !deleted) return { error: t('errorCookieNotStored') };
 
     let warning: string | undefined;
     if (original && shouldRemoveOriginal(original, cookie, written)) {
       try {
         await browser.cookies.remove(toRemoveDetails(original));
       } catch (err) {
-        warning = `Saved, but the previous “${original.name}” could not be removed: ${errorMessage(err)}`;
+        warning = t('warningOriginalNotRemoved', original.name, errorMessage(err));
       }
     }
 
@@ -297,7 +298,7 @@ export default defineBackground(() => {
       try {
         const result = await browser.cookies.remove(toRemoveDetails(cookie));
         if (result) removed.push(cookie);
-        else failed.push({ name: cookie.name, domain: cookie.domain, error: 'not found' });
+        else failed.push({ name: cookie.name, domain: cookie.domain, error: t('errorNotFound') });
       } catch (err) {
         failed.push({ name: cookie.name, domain: cookie.domain, error: errorMessage(err) });
       }
@@ -327,7 +328,7 @@ export default defineBackground(() => {
           // A protected cookie the user writes on purpose is protected at its new state.
           if (next.protect.some((r) => r.id === id)) next = withProtect(next, protectRuleFor(result, Date.now()));
         } else {
-          failed.push({ name: cookie.name, domain: cookie.domain, error: 'not stored' });
+          failed.push({ name: cookie.name, domain: cookie.domain, error: t('errorNotStored') });
         }
       } catch (err) {
         failed.push({ name: cookie.name, domain: cookie.domain, error: errorMessage(err) });
@@ -402,7 +403,7 @@ export default defineBackground(() => {
     const profiles = data.profiles as Record<string, { cookies: CookieLike[]; url: string | null }>;
     const profile = profiles[name];
 
-    if (!profile) return { error: 'Profile not found' };
+    if (!profile) return { error: t('errorProfileNotFound') };
 
     // What was there before, so the popup can undo the load.
     let previous: CookieLike[] = [];

@@ -3,7 +3,7 @@ import {
   toNetscape, toCurl, toHeaderString, cookieUrl, escapeHtml,
   formatExpiry, filterCookies, getBadges, cookieBadges, sameSiteLabel,
   toDatetimeLocal, fromDatetimeLocal, isPartitioned, domainAppliesToHost,
-  CAUSE_MAP,
+  causeLabel, CHANGE_CAUSES,
 } from '../utils/cookies';
 import type { CookieLike } from '../utils/cookies';
 
@@ -382,16 +382,16 @@ describe('toDatetimeLocal / fromDatetimeLocal', () => {
 
 // --- Cause Map ---
 
-describe('CAUSE_MAP', () => {
-  it('has all 5 causes', () => {
-    expect(Object.keys(CAUSE_MAP)).toHaveLength(5);
+describe('causeLabel', () => {
+  it('labels every cookies.onChanged cause', () => {
+    expect(CHANGE_CAUSES).toHaveLength(5);
+    expect(causeLabel('explicit')).toBe('Set/deleted by page or extension');
+    expect(causeLabel('overwrite')).toBe('Overwritten by new value');
+    expect(causeLabel('expired')).toBe('Expired');
+    expect(causeLabel('evicted')).toBe('Evicted (storage limit)');
+    expect(causeLabel('expired_overwrite')).toBe('Expired and overwritten');
   });
-
-  it('has explicit', () => expect(CAUSE_MAP.explicit).toBe('Set/deleted by page or extension'));
-  it('has overwrite', () => expect(CAUSE_MAP.overwrite).toBe('Overwritten by new value'));
-  it('has expired', () => expect(CAUSE_MAP.expired).toBe('Expired'));
-  it('has evicted', () => expect(CAUSE_MAP.evicted).toBe('Evicted (storage limit)'));
-  it('has expired_overwrite', () => expect(CAUSE_MAP.expired_overwrite).toBe('Expired and overwritten'));
+  it('shows an unknown cause as given', () => expect(causeLabel('future_cause')).toBe('future_cause'));
 });
 
 // --- Change Log Truncation ---

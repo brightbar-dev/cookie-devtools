@@ -4,5 +4,1693 @@
   },
   "appDescription": {
     "message": "Developer cookie manager with real-time monitoring, environment profiles, and export to curl/wget. No tracking, no ads."
+  },
+  "localeCode": {
+    "message": "en",
+    "description": "BCP 47 language tag of this translation; formats relative times like \"in 3 days\" to match the UI text"
+  },
+  "openSidePanel": {
+    "message": "Open in side panel"
+  },
+  "toggleDarkMode": {
+    "message": "Toggle dark mode"
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "viewsLabel": {
+    "message": "Views"
+  },
+  "tabCookies": {
+    "message": "Cookies"
+  },
+  "tabMonitor": {
+    "message": "Monitor"
+  },
+  "tabProfiles": {
+    "message": "Profiles"
+  },
+  "versionLabel": {
+    "message": "v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "searchPlaceholder": {
+    "message": "Filter cookies..."
+  },
+  "searchLabel": {
+    "message": "Filter cookies"
+  },
+  "sortByLabel": {
+    "message": "Sort cookies by"
+  },
+  "sortByTitle": {
+    "message": "Sort by"
+  },
+  "sortName": {
+    "message": "Name"
+  },
+  "sortDomain": {
+    "message": "Domain"
+  },
+  "sortExpiry": {
+    "message": "Expiry"
+  },
+  "sortSize": {
+    "message": "Size"
+  },
+  "sortAscending": {
+    "message": "Ascending"
+  },
+  "sortDescending": {
+    "message": "Descending"
+  },
+  "sortDirectionAscending": {
+    "message": "Sort direction: ascending"
+  },
+  "sortDirectionDescending": {
+    "message": "Sort direction: descending"
+  },
+  "actionAdd": {
+    "message": "+ Add"
+  },
+  "addCookieTitle": {
+    "message": "Add cookie"
+  },
+  "actionImport": {
+    "message": "Import"
+  },
+  "importCookiesTitle": {
+    "message": "Import cookies"
+  },
+  "actionExport": {
+    "message": "Export"
+  },
+  "actionClear": {
+    "message": "Clear"
+  },
+  "deleteAllTitle": {
+    "message": "Delete all cookies for this site"
+  },
+  "chipsLabel": {
+    "message": "Show only cookies that are"
+  },
+  "chipSameSiteNone": {
+    "message": "SameSite=None"
+  },
+  "selectAllLabel": {
+    "message": "Select all shown cookies"
+  },
+  "actionDelete": {
+    "message": "Delete"
+  },
+  "actionClearSelection": {
+    "message": "Clear selection"
+  },
+  "selectionCount": {
+    "message": "$COUNT$ selected",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rulesPillTitle": {
+    "message": "Protected and blocked cookies for this site"
+  },
+  "rulesPillProtected": {
+    "message": "$COUNT$ protected",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rulesPillBlocked": {
+    "message": "$COUNT$ blocked",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "listKeyboardHint": {
+    "message": "Arrow keys move, Enter edits, Space selects, Delete deletes"
+  },
+  "statsTotal": {
+    "message": "$SIZE$ total",
+    "placeholders": {
+      "size": {
+        "content": "$1"
+      }
+    }
+  },
+  "statsTotalCrowded": {
+    "message": "$SIZE$ total · over $MAX$ on $DOMAINS$",
+    "placeholders": {
+      "size": {
+        "content": "$1"
+      },
+      "max": {
+        "content": "$2"
+      },
+      "domains": {
+        "content": "$3"
+      }
+    }
+  },
+  "statsTitle": {
+    "message": "Largest: $NAME$, $BYTES$ bytes. Browsers reject a cookie over $MAX$ bytes and keep at most $PER_DOMAIN$ per domain.",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "bytes": {
+        "content": "$2"
+      },
+      "max": {
+        "content": "$3"
+      },
+      "per_domain": {
+        "content": "$4"
+      }
+    }
+  },
+  "noName": {
+    "message": "(no name)"
+  },
+  "badgeLock": {
+    "message": "Lock",
+    "description": "Badge on a protected cookie"
+  },
+  "badgeLockTitle": {
+    "message": "Protected — put back whenever a site changes or deletes it"
+  },
+  "badgeSecure": {
+    "message": "S",
+    "description": "One-letter badge for a Secure cookie"
+  },
+  "badgeSecureTitle": {
+    "message": "Secure — sent only over HTTPS"
+  },
+  "badgeHttpOnly": {
+    "message": "H",
+    "description": "One-letter badge for an HttpOnly cookie"
+  },
+  "badgeHttpOnlyTitle": {
+    "message": "HttpOnly — hidden from page JavaScript"
+  },
+  "badgeSession": {
+    "message": "Ses",
+    "description": "Short badge for a session cookie"
+  },
+  "badgeSessionTitle": {
+    "message": "Session — removed when the browser closes"
+  },
+  "badgePartitioned": {
+    "message": "P",
+    "description": "One-letter badge for a partitioned (CHIPS) cookie"
+  },
+  "badgePartitionedFirstPartyTitle": {
+    "message": "Partitioned (CHIPS) under $SITE$, first-party",
+    "placeholders": {
+      "site": {
+        "content": "$1"
+      }
+    }
+  },
+  "badgePartitionedCrossSiteTitle": {
+    "message": "Partitioned (CHIPS) under $SITE$, set by an embedded cross-site frame",
+    "placeholders": {
+      "site": {
+        "content": "$1"
+      }
+    }
+  },
+  "rowSessionTitle": {
+    "message": "Session cookie — removed when the browser closes"
+  },
+  "rowExpiresTitle": {
+    "message": "Expires $DATE$ ($RELATIVE$)",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      },
+      "relative": {
+        "content": "$2"
+      }
+    }
+  },
+  "rowMetaTitle": {
+    "message": "$EXPIRY$ · $BYTES$ bytes",
+    "placeholders": {
+      "expiry": {
+        "content": "$1"
+      },
+      "bytes": {
+        "content": "$2"
+      }
+    }
+  },
+  "rowSelectLabel": {
+    "message": "Select $NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "rowEdit": {
+    "message": "Edit"
+  },
+  "rowEditLabel": {
+    "message": "Edit $NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "rowCopy": {
+    "message": "Copy value"
+  },
+  "rowCopyLabel": {
+    "message": "Copy value of $NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "rowDeleteLabel": {
+    "message": "Delete $NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "expiryExpired": {
+    "message": "Expired"
+  },
+  "expiryShortMinutes": {
+    "message": "$N$m",
+    "description": "Minutes until expiry, as short as possible",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "expiryShortHours": {
+    "message": "$N$h",
+    "description": "Hours until expiry",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "expiryShortDays": {
+    "message": "$N$d",
+    "description": "Days until expiry",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "expiryShortYears": {
+    "message": "$N$y",
+    "description": "Years until expiry",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "bytesB": {
+    "message": "$N$ B",
+    "description": "A size in bytes",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "bytesKB": {
+    "message": "$N$ KB",
+    "description": "A size in kilobytes",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastCopied": {
+    "message": "Copied to clipboard"
+  },
+  "copyFailed": {
+    "message": "Copy failed"
+  },
+  "noCookiesFound": {
+    "message": "No cookies found for this site."
+  },
+  "emptyNoMatchTitle": {
+    "message": "No cookies match"
+  },
+  "emptyNoMatchDetail": {
+    "message": "Nothing on $SITE$ matches the filter and chips you picked.",
+    "placeholders": {
+      "site": {
+        "content": "$1"
+      }
+    }
+  },
+  "emptyClearFilters": {
+    "message": "Clear filters"
+  },
+  "emptyNoCookiesTitle": {
+    "message": "No cookies on $SITE$ yet",
+    "placeholders": {
+      "site": {
+        "content": "$1"
+      }
+    }
+  },
+  "emptyNoCookiesDetail": {
+    "message": "Sites set cookies as you sign in and browse, and they appear here as it happens. You can also add one or import an export."
+  },
+  "emptyAddCookie": {
+    "message": "+ Add cookie"
+  },
+  "targetNoPageTitle": {
+    "message": "No page open"
+  },
+  "targetNoPageDetail": {
+    "message": "Open a website in this window to see its cookies."
+  },
+  "targetNotWebsiteTitle": {
+    "message": "Not a website"
+  },
+  "targetNotWebsiteDetail": {
+    "message": "Open a website to see its cookies."
+  },
+  "targetOnlyHttpDetail": {
+    "message": "Only http and https pages have cookies."
+  },
+  "targetBrowserPageTitle": {
+    "message": "Browser page"
+  },
+  "targetBrowserPageDetail": {
+    "message": "Browser pages such as settings, extensions and the new tab page have no cookies. Open a website to see its cookies."
+  },
+  "targetLocalFileTitle": {
+    "message": "Local file"
+  },
+  "targetLocalFileDetail": {
+    "message": "Files opened from your computer don’t use cookies. Serve the file from localhost to work with its cookies."
+  },
+  "actionUndo": {
+    "message": "Undo"
+  },
+  "toastDeleteFailed": {
+    "message": "Couldn’t delete “$NAME$”: $ERROR$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "error": {
+        "content": "$2"
+      }
+    }
+  },
+  "toastDeleted": {
+    "message": "Deleted “$NAME$”",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastDeletedUnprotected": {
+    "message": "Deleted “$NAME$” and ended its protection",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirmUndoDetail": {
+    "message": "You can undo for 10 seconds."
+  },
+  "confirmDeleteCount": {
+    "message": "Delete $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastDeletedPartial": {
+    "message": "Deleted $REMOVED$ of $COUNT$ · $FAILED$ failed",
+    "placeholders": {
+      "removed": {
+        "content": "$1"
+      },
+      "count": {
+        "content": "$2"
+      },
+      "failed": {
+        "content": "$3"
+      }
+    }
+  },
+  "toastNothingToDelete": {
+    "message": "No cookies to delete"
+  },
+  "confirmDeleteAllDetail": {
+    "message": "Sites that rely on them will sign you out or forget settings. You can undo for 10 seconds."
+  },
+  "writeExpiredSkipped": {
+    "message": "$COUNT$ expired, skipped",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "writeFailed": {
+    "message": "$COUNT$ failed ($NAMES$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "names": {
+        "content": "$2"
+      }
+    }
+  },
+  "toastSidePanelFailed": {
+    "message": "Couldn’t open the side panel: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "rulesTitle": {
+    "message": "Rules for $SITE$",
+    "placeholders": {
+      "site": {
+        "content": "$1"
+      }
+    }
+  },
+  "ruleProtected": {
+    "message": "Protected"
+  },
+  "ruleBlocked": {
+    "message": "Blocked"
+  },
+  "actionUnprotect": {
+    "message": "Unprotect"
+  },
+  "actionUnblock": {
+    "message": "Unblock"
+  },
+  "rulesNone": {
+    "message": "No protected or blocked cookies for this site."
+  },
+  "rulesFoot": {
+    "message": "Protected cookies are put back whenever a site changes or deletes them. Blocked cookies are deleted whenever a site sets them. Every site's rules are listed in Settings."
+  },
+  "confirmBlock": {
+    "message": "Block “$NAME$” on $SITE$?",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "site": {
+        "content": "$2"
+      }
+    }
+  },
+  "confirmBlockDetail": {
+    "message": "It is deleted now, and again whenever a site sets it. You can undo, or unblock it any time."
+  },
+  "actionBlock": {
+    "message": "Block"
+  },
+  "toastBlocked": {
+    "message": "Blocked “$NAME$” on $SITE$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "site": {
+        "content": "$2"
+      }
+    }
+  },
+  "editorTitleAdd": {
+    "message": "Add Cookie"
+  },
+  "editorTitleEdit": {
+    "message": "Edit Cookie"
+  },
+  "fieldName": {
+    "message": "Name"
+  },
+  "fieldValue": {
+    "message": "Value"
+  },
+  "fieldDomain": {
+    "message": "Domain"
+  },
+  "fieldPath": {
+    "message": "Path"
+  },
+  "fieldExpires": {
+    "message": "Expires"
+  },
+  "fieldSameSite": {
+    "message": "SameSite"
+  },
+  "attrHostOnly": {
+    "message": "Host-only"
+  },
+  "editorHostOnlyHint": {
+    "message": "no Domain attribute — sent to this exact host, not its subdomains"
+  },
+  "sameSiteUnspecified": {
+    "message": "Unspecified"
+  },
+  "sameSiteLax": {
+    "message": "Lax"
+  },
+  "sameSiteStrict": {
+    "message": "Strict"
+  },
+  "sameSiteNone": {
+    "message": "None"
+  },
+  "attrSession": {
+    "message": "Session"
+  },
+  "attrSecure": {
+    "message": "Secure"
+  },
+  "attrHttpOnly": {
+    "message": "HttpOnly"
+  },
+  "attrPersistent": {
+    "message": "Persistent"
+  },
+  "attrPartitioned": {
+    "message": "Partitioned"
+  },
+  "editorProtect": {
+    "message": "Protect"
+  },
+  "editorProtectHint": {
+    "message": "keep what you save: put it back whenever a site changes or deletes it"
+  },
+  "editorBlock": {
+    "message": "Block…"
+  },
+  "editorBlockTitle": {
+    "message": "Delete this cookie now and whenever a site sets it"
+  },
+  "actionCancel": {
+    "message": "Cancel"
+  },
+  "actionSave": {
+    "message": "Save"
+  },
+  "actionClose": {
+    "message": "Close"
+  },
+  "editorPartitioned": {
+    "message": "Partitioned (CHIPS) under $SITE$. Saving keeps it in the same partition.",
+    "placeholders": {
+      "site": {
+        "content": "$1"
+      }
+    }
+  },
+  "editorPartitionedCrossSite": {
+    "message": "Partitioned (CHIPS) under $SITE$, set from a cross-site frame. Saving keeps it in the same partition.",
+    "placeholders": {
+      "site": {
+        "content": "$1"
+      }
+    }
+  },
+  "editorSize": {
+    "message": "$SIZE$ / $MAX$ bytes",
+    "placeholders": {
+      "size": {
+        "content": "$1"
+      },
+      "max": {
+        "content": "$2"
+      }
+    }
+  },
+  "editorSaveAndDelete": {
+    "message": "Save and delete cookie"
+  },
+  "editorSaveAnyway": {
+    "message": "Save anyway"
+  },
+  "editorRejectedKept": {
+    "message": "The browser rejected this cookie: $ERROR$ The original cookie is unchanged.",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "editorRejectedNotAdded": {
+    "message": "The browser rejected this cookie: $ERROR$ Nothing was added.",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastDeletedPastExpiry": {
+    "message": "Deleted “$NAME$” (expiry in the past)",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastCookieUpdated": {
+    "message": "Cookie updated"
+  },
+  "toastCookieAdded": {
+    "message": "Cookie added"
+  },
+  "toastCookieUpdatedProtected": {
+    "message": "Cookie updated and protected"
+  },
+  "toastCookieAddedProtected": {
+    "message": "Cookie added and protected"
+  },
+  "toastCookieUpdatedUnprotected": {
+    "message": "Cookie updated — no longer protected"
+  },
+  "validateNameRequired": {
+    "message": "Name is required."
+  },
+  "validateNameControl": {
+    "message": "Name can’t contain tabs, line breaks or other control characters."
+  },
+  "validateNameSeparator": {
+    "message": "Name can’t contain “;” or “=”."
+  },
+  "validateNameWhitespace": {
+    "message": "Name starts or ends with a space."
+  },
+  "validateValueControl": {
+    "message": "Value can’t contain line breaks or other control characters."
+  },
+  "validateValueSemicolon": {
+    "message": "Value can’t contain “;”. URL-encode it as %3B."
+  },
+  "validateTooLarge": {
+    "message": "Name + value is $SIZE$ bytes; browsers reject cookies over $MAX$.",
+    "placeholders": {
+      "size": {
+        "content": "$1"
+      },
+      "max": {
+        "content": "$2"
+      }
+    }
+  },
+  "validateNearLimit": {
+    "message": "Name + value is $SIZE$ of $MAX$ bytes — close to the limit.",
+    "placeholders": {
+      "size": {
+        "content": "$1"
+      },
+      "max": {
+        "content": "$2"
+      }
+    }
+  },
+  "validateDomainRequired": {
+    "message": "Domain is required."
+  },
+  "validateDomainFormat": {
+    "message": "Domain must be a host name like example.com — no scheme, port or path."
+  },
+  "validateDomainLength": {
+    "message": "Domain is longer than $MAX$ bytes.",
+    "placeholders": {
+      "max": {
+        "content": "$1"
+      }
+    }
+  },
+  "validatePathFormat": {
+    "message": "Path must start with “/”."
+  },
+  "validatePathLength": {
+    "message": "Path is longer than $MAX$ bytes.",
+    "placeholders": {
+      "max": {
+        "content": "$1"
+      }
+    }
+  },
+  "validateSameSiteNoneInsecure": {
+    "message": "SameSite=None requires Secure."
+  },
+  "validatePartitionedInsecure": {
+    "message": "Partitioned cookies must be Secure."
+  },
+  "validateSecurePrefix": {
+    "message": "A __Secure- cookie must be Secure."
+  },
+  "validateHostPrefixSecure": {
+    "message": "A __Host- cookie must be Secure."
+  },
+  "validateHostPrefixPath": {
+    "message": "A __Host- cookie must have Path “/”."
+  },
+  "validateHostPrefixDomain": {
+    "message": "A __Host- cookie must be host-only (no Domain attribute)."
+  },
+  "validateExpiryMissing": {
+    "message": "Choose an expiry time, or tick Session."
+  },
+  "validateExpiryPast": {
+    "message": "This time is in the past, so saving deletes the cookie."
+  },
+  "validateExpiryCapped": {
+    "message": "Browsers cap expiry at $DAYS$ days from now; it will be shortened.",
+    "placeholders": {
+      "days": {
+        "content": "$1"
+      }
+    }
+  },
+  "inspectorViewJwt": {
+    "message": "JWT"
+  },
+  "inspectorViewJson": {
+    "message": "JSON"
+  },
+  "inspectorViewUrl": {
+    "message": "URL-decoded"
+  },
+  "inspectorViewBase64": {
+    "message": "Base64"
+  },
+  "inspectorTabsLabel": {
+    "message": "Decoded value"
+  },
+  "inspectorReadOnly": {
+    "message": "Decoded · read-only"
+  },
+  "inspectorPayload": {
+    "message": "Payload"
+  },
+  "inspectorHeader": {
+    "message": "Header"
+  },
+  "inspectorPrettyJson": {
+    "message": "Pretty-printed JSON"
+  },
+  "inspectorBase64Decoded": {
+    "message": "Base64-decoded"
+  },
+  "inspectorBase64UrlDecoded": {
+    "message": "Base64URL-decoded"
+  },
+  "inspectorNotVerified": {
+    "message": "Decoded only — the signature is not verified."
+  },
+  "inspectorCopied": {
+    "message": "Copied"
+  },
+  "actionCopy": {
+    "message": "Copy"
+  },
+  "jwtNoExpiry": {
+    "message": "No expiry (exp) claim"
+  },
+  "jwtExpired": {
+    "message": "Expired $RELATIVE$",
+    "description": "RELATIVE is a phrase like \"2 hours ago\"",
+    "placeholders": {
+      "relative": {
+        "content": "$1"
+      }
+    }
+  },
+  "jwtNotYetValid": {
+    "message": "Not valid until $RELATIVE$",
+    "description": "RELATIVE is a phrase like \"in 2 hours\"",
+    "placeholders": {
+      "relative": {
+        "content": "$1"
+      }
+    }
+  },
+  "jwtValid": {
+    "message": "Not expired — expires $RELATIVE$",
+    "description": "RELATIVE is a phrase like \"in 2 hours\"",
+    "placeholders": {
+      "relative": {
+        "content": "$1"
+      }
+    }
+  },
+  "importIntro": {
+    "message": "Paste, open or drop JSON (Cookie DevTools, Cookie-Editor, EditThisCookie, Playwright), a Netscape cookies.txt, a Cookie or Set-Cookie header, or a curl command. Nothing is written until you import."
+  },
+  "importTextLabel": {
+    "message": "Cookies to import"
+  },
+  "importTextPlaceholder": {
+    "message": "Paste here, or drop a file"
+  },
+  "importOpenFile": {
+    "message": "Open file…"
+  },
+  "importOpenInTab": {
+    "message": "Open in a tab"
+  },
+  "importFileTooLarge": {
+    "message": "$FILE$ is larger than 5 MB.",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "importWillCreate": {
+    "message": "$COUNT$ will be created",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "importWillReplace": {
+    "message": "$COUNT$ will replace existing",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "importSkippedCount": {
+    "message": "$COUNT$ skipped",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "importSkippedReason": {
+    "message": "skipped: $REASON$",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "importDone": {
+    "message": "Done"
+  },
+  "importImported": {
+    "message": "Imported $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "importFailedCount": {
+    "message": "$COUNT$ failed",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "importFormatCookieJson": {
+    "message": "JSON cookie list (Cookie DevTools, Cookie-Editor)"
+  },
+  "importFormatEditThisCookie": {
+    "message": "EditThisCookie JSON"
+  },
+  "importFormatPlaywright": {
+    "message": "Playwright / Puppeteer cookies"
+  },
+  "importFormatNetscape": {
+    "message": "Netscape cookies.txt"
+  },
+  "importFormatHeader": {
+    "message": "Cookie header"
+  },
+  "importFormatSetCookie": {
+    "message": "Set-Cookie headers"
+  },
+  "importFormatCurl": {
+    "message": "curl command"
+  },
+  "importFormatUnknown": {
+    "message": "Unrecognised format"
+  },
+  "importEntryName": {
+    "message": "entry $N$",
+    "description": "Names an import entry that has no cookie name",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "importLineName": {
+    "message": "line $N$",
+    "description": "Names a cookies.txt line",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "importEmptyName": {
+    "message": "(empty)"
+  },
+  "importInvalidJson": {
+    "message": "Not valid JSON: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "importNotCookieList": {
+    "message": "JSON, but not a list of cookies."
+  },
+  "importCurlNoCookies": {
+    "message": "A curl command, but it has no -b/--cookie or Cookie header."
+  },
+  "importCurlCookieFile": {
+    "message": "curl reads cookies from the file “$FILE$” here — open that file instead.",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "importUnknownFormat": {
+    "message": "Not a format this can read: JSON, Netscape cookies.txt, a Cookie or Set-Cookie header, or a curl command."
+  },
+  "importEmpty": {
+    "message": "Paste an export or open a file."
+  },
+  "skipNotCookieObject": {
+    "message": "not a cookie object",
+    "description": "Why an import entry was skipped; follows the entry name"
+  },
+  "skipNoName": {
+    "message": "has no name"
+  },
+  "skipNoDomain": {
+    "message": "has no domain, and there is no current site to use"
+  },
+  "skipNoDomainAttribute": {
+    "message": "has no Domain, and there is no current site to use"
+  },
+  "skipNetscapeFields": {
+    "message": "is not 7 tab-separated fields"
+  },
+  "skipNoEquals": {
+    "message": "has no “=”, so it is not a name=value pair"
+  },
+  "skipNoSite": {
+    "message": "there is no current site to import it for"
+  },
+  "skipPartitionedHeader": {
+    "message": "is Partitioned, and a header does not say which top-level site it belongs to — import it from a JSON export instead"
+  },
+  "skipExpired": {
+    "message": "has already expired"
+  },
+  "skipDuplicate": {
+    "message": "appears again later in the import"
+  },
+  "exportFormatJson": {
+    "message": "JSON"
+  },
+  "exportFormatNetscape": {
+    "message": "cookies.txt (curl/wget)"
+  },
+  "exportFormatCurl": {
+    "message": "curl command"
+  },
+  "exportFormatHeader": {
+    "message": "Cookie header"
+  },
+  "exportScopeShown": {
+    "message": "Exporting the $SHOWN$ shown (of $TOTAL$)",
+    "placeholders": {
+      "shown": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "actionDownload": {
+    "message": "Download"
+  },
+  "monitorRecord": {
+    "message": "Record"
+  },
+  "monitorScopeLabel": {
+    "message": "Which cookie changes to record"
+  },
+  "monitorClearLog": {
+    "message": "Clear log"
+  },
+  "monitorViewsLabel": {
+    "message": "Monitor view"
+  },
+  "monitorSavedLog": {
+    "message": "Saved log"
+  },
+  "toastLogCleared": {
+    "message": "Log cleared"
+  },
+  "monitorScopeAll": {
+    "message": "All sites"
+  },
+  "monitorScopeOnly": {
+    "message": "Only $SITE$",
+    "placeholders": {
+      "site": {
+        "content": "$1"
+      }
+    }
+  },
+  "monitorStatusRecording": {
+    "message": "● Recording"
+  },
+  "monitorStatusOff": {
+    "message": "Off"
+  },
+  "monitorNoteRecording": {
+    "message": "While recording, each cookie change (name, value, domain, time) is kept in this browser’s extension storage — newest $MAX$ — and never leaves your device.",
+    "placeholders": {
+      "max": {
+        "content": "$1"
+      }
+    }
+  },
+  "monitorNoteOff": {
+    "message": "Recording is off, so nothing is logged. When on, each cookie change (name, value, domain, time) is kept in this browser’s extension storage — newest $MAX$ — and never leaves your device.",
+    "placeholders": {
+      "max": {
+        "content": "$1"
+      }
+    }
+  },
+  "monitorSavedEmptyRecording": {
+    "message": "Recording. Changes show up here as sites set, update and expire cookies."
+  },
+  "monitorSavedEmptyOff": {
+    "message": "Recording is off. Turn on Record to keep a log of cookie changes across visits — set, overwritten, expired and evicted."
+  },
+  "monitorLiveOn": {
+    "message": "Live on $SITE$",
+    "placeholders": {
+      "site": {
+        "content": "$1"
+      }
+    }
+  },
+  "monitorLiveOnThisPage": {
+    "message": "Live on this page"
+  },
+  "monitorLiveWatching": {
+    "message": "Watching $SITE$. Changes show up here as they happen; this view keeps nothing once closed.",
+    "placeholders": {
+      "site": {
+        "content": "$1"
+      }
+    }
+  },
+  "monitorLiveNoPage": {
+    "message": "Open a web page to watch its cookies change."
+  },
+  "changeRemoved": {
+    "message": "Removed"
+  },
+  "changeSet": {
+    "message": "Set"
+  },
+  "causeExplicit": {
+    "message": "Set/deleted by page or extension"
+  },
+  "causeOverwrite": {
+    "message": "Overwritten by new value"
+  },
+  "causeEvicted": {
+    "message": "Evicted (storage limit)"
+  },
+  "causeExpiredOverwrite": {
+    "message": "Expired and overwritten"
+  },
+  "profileNamePlaceholder": {
+    "message": "Profile name..."
+  },
+  "profileNameLabel": {
+    "message": "Profile name"
+  },
+  "profileSaveCurrent": {
+    "message": "Save Current"
+  },
+  "profilesEmpty": {
+    "message": "No profiles yet. Save this site’s cookies under a name like “staging-admin”, then load them later to switch accounts or environments in one click."
+  },
+  "toastEnterProfileName": {
+    "message": "Enter a profile name"
+  },
+  "actionLoad": {
+    "message": "Load"
+  },
+  "profileLoadLabel": {
+    "message": "Load profile $NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "profileDeleteTitle": {
+    "message": "Delete profile"
+  },
+  "profileDeleteLabel": {
+    "message": "Delete profile $NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastError": {
+    "message": "Error: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirmDeleteProfile": {
+    "message": "Delete profile “$NAME$”?",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirmDeleteProfileDetail": {
+    "message": "The saved cookies in it are removed from this browser."
+  },
+  "toastProfileDeleted": {
+    "message": "Deleted profile “$NAME$”",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "errorCookieNotStored": {
+    "message": "The browser did not store the cookie."
+  },
+  "warningOriginalNotRemoved": {
+    "message": "Saved, but the previous “$NAME$” could not be removed: $ERROR$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "error": {
+        "content": "$2"
+      }
+    }
+  },
+  "errorNotFound": {
+    "message": "not found"
+  },
+  "errorNotStored": {
+    "message": "not stored"
+  },
+  "errorProfileNotFound": {
+    "message": "Profile not found"
+  },
+  "promoLabel": {
+    "message": "More from Brightbar"
+  },
+  "promoJsonViewer": {
+    "message": "JSON Viewer Pro"
+  },
+  "promoJsonViewerTitle": {
+    "message": "JSON Viewer Pro — JSON tree viewer"
+  },
+  "promoDevtoolsPro": {
+    "message": "DevTools Pro"
+  },
+  "promoDevtoolsProTitle": {
+    "message": "DevTools Pro — 12 dev tools in one"
+  },
+  "promoApiClient": {
+    "message": "API Client"
+  },
+  "promoApiClientTitle": {
+    "message": "Browser API Client — API client in your browser"
+  },
+  "kbdSearch": {
+    "message": "search",
+    "description": "Keyboard hint: / to search"
+  },
+  "kbdMove": {
+    "message": "move",
+    "description": "Keyboard hint: arrow keys to move"
+  },
+  "kbdEnter": {
+    "message": "Enter",
+    "description": "The Enter key"
+  },
+  "kbdEdit": {
+    "message": "edit",
+    "description": "Keyboard hint: Enter to edit"
+  },
+  "kbdDel": {
+    "message": "Del",
+    "description": "The Delete key"
+  },
+  "kbdDelete": {
+    "message": "delete",
+    "description": "Keyboard hint: Del to delete"
+  },
+  "optionsPageTitle": {
+    "message": "Cookie DevTools — Settings"
+  },
+  "optionsHeading": {
+    "message": "Cookie DevTools Settings"
+  },
+  "optionsAppearance": {
+    "message": "Appearance"
+  },
+  "optionsTheme": {
+    "message": "Theme"
+  },
+  "optionsThemeAuto": {
+    "message": "Auto (system)"
+  },
+  "optionsThemeLight": {
+    "message": "Light"
+  },
+  "optionsThemeDark": {
+    "message": "Dark"
+  },
+  "optionsMaxLog": {
+    "message": "Max change log entries"
+  },
+  "optionsRulesHeading": {
+    "message": "Protected and blocked cookies"
+  },
+  "optionsRulesHelp": {
+    "message": "Protected cookies are put back whenever a site changes or deletes them. Blocked cookies are deleted whenever a site sets them. Add either from a cookie's editor."
+  },
+  "optionsRulesNone": {
+    "message": "None yet."
+  },
+  "optionsData": {
+    "message": "Data"
+  },
+  "optionsClearDataLabel": {
+    "message": "Clear all profiles and change log"
+  },
+  "optionsClearData": {
+    "message": "Clear All Data"
+  },
+  "optionsClearDataConfirm": {
+    "message": "This will delete all saved profiles and the change log. Continue?"
+  },
+  "optionsDataCleared": {
+    "message": "All data cleared."
+  },
+  "optionsAbout": {
+    "message": "About"
+  },
+  "optionsAboutVersion": {
+    "message": "Cookie DevTools v$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "optionsAboutSummary": {
+    "message": "Developer-focused cookie manager with real-time monitoring, environment profiles, and one-click export."
+  },
+  "optionsAboutPrivacy": {
+    "message": "No ads. No tracking. No data collection. Change-monitor recording is off until you turn it on, and its log stays on this device."
+  },
+  "cookieCount_one": {
+    "message": "$COUNT$ cookie",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "cookieCount_other": {
+    "message": "$COUNT$ cookies",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "cookieCountShown_one": {
+    "message": "$SHOWN$ of $COUNT$ cookie",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "shown": {
+        "content": "$2"
+      }
+    }
+  },
+  "cookieCountShown_other": {
+    "message": "$SHOWN$ of $COUNT$ cookies",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "shown": {
+        "content": "$2"
+      }
+    }
+  },
+  "confirmDeleteSelected_one": {
+    "message": "Delete $COUNT$ selected cookie?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirmDeleteSelected_other": {
+    "message": "Delete $COUNT$ selected cookies?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastDeletedCount_one": {
+    "message": "Deleted $COUNT$ cookie",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastDeletedCount_other": {
+    "message": "Deleted $COUNT$ cookies",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "writeRestored_one": {
+    "message": "Restored $COUNT$ cookie",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "writeRestored_other": {
+    "message": "Restored $COUNT$ cookies",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirmDeleteAll_one": {
+    "message": "Delete all $COUNT$ cookie for $SITE$?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "site": {
+        "content": "$2"
+      }
+    }
+  },
+  "confirmDeleteAll_other": {
+    "message": "Delete all $COUNT$ cookies for $SITE$?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "site": {
+        "content": "$2"
+      }
+    }
+  },
+  "writeUnblockedRestored_one": {
+    "message": "Unblocked — restored $COUNT$ cookie",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "writeUnblockedRestored_other": {
+    "message": "Unblocked — restored $COUNT$ cookies",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "exportScopeSelected_one": {
+    "message": "Exporting $COUNT$ selected cookie",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "exportScopeSelected_other": {
+    "message": "Exporting $COUNT$ selected cookies",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "exportScopeAll_one": {
+    "message": "Exporting all $COUNT$ cookie",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "exportScopeAll_other": {
+    "message": "Exporting all $COUNT$ cookies",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastDownloaded_one": {
+    "message": "Downloaded $FORMAT$ · $COUNT$ cookie",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "format": {
+        "content": "$2"
+      }
+    }
+  },
+  "toastDownloaded_other": {
+    "message": "Downloaded $FORMAT$ · $COUNT$ cookies",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "format": {
+        "content": "$2"
+      }
+    }
+  },
+  "toastCopiedFormat_one": {
+    "message": "Copied $FORMAT$ · $COUNT$ cookie",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "format": {
+        "content": "$2"
+      }
+    }
+  },
+  "toastCopiedFormat_other": {
+    "message": "Copied $FORMAT$ · $COUNT$ cookies",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "format": {
+        "content": "$2"
+      }
+    }
+  },
+  "toastProfileSaved_one": {
+    "message": "Saved “$NAME$” ($COUNT$ cookie)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "name": {
+        "content": "$2"
+      }
+    }
+  },
+  "toastProfileSaved_other": {
+    "message": "Saved “$NAME$” ($COUNT$ cookies)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "name": {
+        "content": "$2"
+      }
+    }
+  },
+  "profileMeta_one": {
+    "message": "$COUNT$ cookie · $DATE$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "date": {
+        "content": "$2"
+      }
+    }
+  },
+  "profileMeta_other": {
+    "message": "$COUNT$ cookies · $DATE$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "date": {
+        "content": "$2"
+      }
+    }
+  },
+  "writeLoaded_one": {
+    "message": "Loaded “$NAME$”: $COUNT$ cookie",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "name": {
+        "content": "$2"
+      }
+    }
+  },
+  "writeLoaded_other": {
+    "message": "Loaded “$NAME$”: $COUNT$ cookies",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "name": {
+        "content": "$2"
+      }
+    }
+  },
+  "writeUndoneRestored_one": {
+    "message": "Undone — restored $COUNT$ cookie",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "writeUndoneRestored_other": {
+    "message": "Undone — restored $COUNT$ cookies",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "importApply_one": {
+    "message": "Import $COUNT$ cookie",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "importApply_other": {
+    "message": "Import $COUNT$ cookies",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "importOtherSites_one": {
+    "message": "$COUNT$ cookie belongs to other sites ($SITES$) and won’t appear in this site’s list.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "sites": {
+        "content": "$2"
+      }
+    }
+  },
+  "importOtherSites_other": {
+    "message": "$COUNT$ cookies belong to other sites ($SITES$) and won’t appear in this site’s list.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "sites": {
+        "content": "$2"
+      }
+    }
   }
 }

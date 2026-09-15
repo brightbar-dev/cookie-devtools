@@ -18,6 +18,8 @@ Built with [WXT](https://wxt.dev/) — builds for Chrome (MV3) and Firefox (MV2)
 - **utils/list.ts** — Sorting, filter chips, compact expiry, size totals. **utils/export.ts** — export text and filenames. **utils/messages.ts** — reply types shared by background and pages.
 - **ui/** — the shared UI: `app.ts` (tabs: Cookies, Monitor, Profiles; list with sort, chips, selection and sizes; editor with Protect/Block; import, rules and confirmation `<dialog>`s; undo toasts; export menu; live change feed), `markup.ts`, `app.css`, plus `dom.ts` (toast, confirm, copy, download), `inspector.ts`, `import-dialog.ts`.
 - **utils/rules.ts** — Protect/Block rules, `decideRuleAction` and `WriteGuard`. **utils/target.ts** — which page a surface works on.
+- **utils/i18n.ts** — `t(key, ...substitutions)` and `tp(key, count, ...)` (a `_one`/`_other` pair) over `browser.i18n`; keys are typed from `public/_locales/en/messages.json`. `ui/dom.ts` `localize(root)` fills `data-i18n`, `data-i18n-title`, `data-i18n-aria-label` and `data-i18n-placeholder`.
+- **public/_locales/** — every user-facing string is in `en/messages.json` (Chrome's placeholder format: `$NAME$` in the message, `{"name": {"content": "$1"}}`, count always `$1` in plural pairs). The other 19 locales translate only `appName` and `appDescription`; the rest falls back to English (`default_locale`).
 - **public/icon-{16,48,128}.png** — Extension icons.
 - **store/** — `cws.json` (listing text, single purpose, permission justifications), `screenshots/` and `promo/` (generated from the real build by `store/tools/`; regenerate them in any PR that changes what they show — see `store/tools/README.md`). `store-assets/` is the superseded v0.2 set.
 
@@ -39,6 +41,7 @@ Built with [WXT](https://wxt.dev/) — builds for Chrome (MV3) and Firefox (MV2)
 - Export formats: JSON, Netscape cookie file, curl command, raw Cookie header — copy or download
 - Theme toggle with auto-detect via `prefers-color-scheme`
 - Uses `browser.*` API (WXT polyfill) for cross-browser compatibility
+- **No English in code or markup**: new UI text goes into `public/_locales/en/messages.json` and is read with `t()`/`tp()` or a `data-i18n*` attribute. Messages hold no HTML; escape `t()` output with `escapeHtml` in `innerHTML` templates (substitutions carry cookie names and domains). Don't call `t()` at module load. `tests/i18n.test.ts` enforces it.
 
 ## Commands
 ```bash
@@ -64,6 +67,7 @@ npm test
 - `tests/importer.test.ts`: format detection, each parser, skip reasons, and export → import round trips
 - `tests/decode.test.ts`, `tests/list.test.ts`, `tests/export.test.ts`: inspector decoding, sort/chips/sizes, export text and filenames
 - `tests/rules.test.ts`: when Protect restores and Block removes, and the event-precise write guard and restore cap; `tests/target.test.ts`: which pages have cookies, how the empty state explains the rest, and which tab updates move a surface to a new page
+- `tests/i18n.test.ts`: every `t()`/`tp()`/`data-i18n` key exists and every message is used; placeholders and plural pairs are well formed; `formatMessage` fills messages as Chrome does (`tests/setup-i18n.ts` serves the English file to every test through it, since Node has no `browser.i18n`); markup, HTML pages and UI code carry no literal English
 - `tests/manifest.test.ts`: the CI allowlist guard in `scripts/check-manifest.mjs` (permissions, optional permissions, hosts, no `content_scripts`)
 - `tests/contrast.test.ts`: reads `ui/app.css` (via `?raw`) and fails if any text/surface token pair, or white on a badge, drops below WCAG AA (4.5:1) in either theme — change colours there, not in component rules
 

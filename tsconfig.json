@@ -1,3 +1,7 @@
 {
-  "extends": "./.wxt/tsconfig.json"
+  "extends": "./.wxt/tsconfig.json",
+  "compilerOptions": {
+    // utils/i18n.ts types message keys from public/_locales/en/messages.json.
+    "resolveJsonModule": true
+  }
 }
