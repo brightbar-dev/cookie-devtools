@@ -9,7 +9,7 @@
   "single_purpose": "View, edit, and manage browser cookies for the current website with real-time change monitoring, environment profiles for switching between dev/staging/prod, and developer export formats (JSON, curl, cookie file, header string).",
   "permission_justifications": {
     "cookies": "Core functionality. The extension reads, creates, edits, and deletes cookies via the chrome.cookies API, and monitors real-time cookie changes via chrome.cookies.onChanged to show developers when and why cookies change.",
-    "storage": "Used to save user preferences (theme, default tab) and environment profiles — named cookie snapshots that let developers quickly switch between different cookie states. All data is stored locally on the user's device.",
+    "storage": "Used to save user preferences (theme, log size), environment profiles — named cookie snapshots that let developers quickly switch between different cookie states — and, only while the user has switched the change monitor's Record toggle on, a capped log of cookie changes. All data is stored locally on the user's device.",
     "activeTab": "Used to read the current tab's URL and domain so the extension can display the cookies relevant to the site the user is viewing. This is the only tab data the extension reads; it does not enumerate tabs, track navigation, or access browsing history.",
     "host_permissions": "Cookie management requires host permissions for the domains whose cookies are being accessed. Since developers need to manage cookies on any website they're working with, broad host permission is required. The extension only accesses cookies — it does not read page content, inject scripts, or monitor browsing activity."
   },

@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   toNetscape, toCurl, toHeaderString, cookieUrl, escapeHtml,
-  formatExpiry, filterCookies, getBadges, sameSiteLabel, buildCookieData,
+  formatExpiry, filterCookies, getBadges, cookieBadges, sameSiteLabel,
+  toDatetimeLocal, fromDatetimeLocal, isPartitioned, domainAppliesToHost,
   CAUSE_MAP,
 } from '../utils/cookies';
 import type { CookieLike } from '../utils/cookies';
@@ -279,43 +280,93 @@ describe('sameSiteLabel', () => {
   it('returns null for undefined', () => expect(sameSiteLabel(undefined)).toBeNull());
 });
 
-// --- Cookie Set Data Construction ---
+// --- Partitioned cookies ---
 
-describe('buildCookieData', () => {
-  it('builds correct URL and data for secure cookie', () => {
-    const d = buildCookieData({
-      name: 'test', value: 'val', domain: '.example.com', path: '/api',
-      secure: true, httpOnly: true, sameSite: 'strict',
-      expirationDate: 1700000000, session: false,
-    });
-    expect(d.url).toBe('https://example.com/api');
-    expect(d.name).toBe('test');
-    expect(d.domain).toBe('.example.com');
-    expect(d.secure).toBe(true);
-    expect(d.httpOnly).toBe(true);
-    expect(d.sameSite).toBe('strict');
-    expect(d.expirationDate).toBe(1700000000);
+describe('cookieUrl for partitioned cookies', () => {
+  it('follows the top-level site scheme for a first-party partitioned cookie (http loopback)', () => {
+    const pk = { topLevelSite: 'http://127.0.0.1', hasCrossSiteAncestor: false };
+    expect(cookieUrl({ secure: true, domain: '127.0.0.1', path: '/', partitionKey: pk })).toBe('http://127.0.0.1/');
   });
 
-  it('uses http for non-secure, defaults path and sameSite', () => {
-    const d = buildCookieData({
-      name: 'sess', value: 'x', domain: 'example.com', path: null,
-      secure: false, httpOnly: false, sameSite: null,
-      expirationDate: 1700000000, session: true,
-    });
-    expect(d.url).toBe('http://example.com/');
-    expect(d.path).toBe('/');
-    expect(d.sameSite).toBe('unspecified');
-    expect(d.expirationDate).toBeUndefined();
+  it('follows the site scheme for a subdomain of the top-level site', () => {
+    const pk = { topLevelSite: 'https://example.com', hasCrossSiteAncestor: false };
+    expect(cookieUrl({ secure: true, domain: 'app.example.com', path: '/a', partitionKey: pk })).toBe('https://app.example.com/a');
   });
 
-  it('handles subdomain URL', () => {
-    const d = buildCookieData({
-      name: 'a', value: 'b', domain: '.sub.example.com', path: '/deep/path',
-      secure: true, httpOnly: false, sameSite: 'lax', session: false,
-    });
-    expect(d.url).toBe('https://sub.example.com/deep/path');
-    expect(d.expirationDate).toBeUndefined();
+  it('uses https for a partitioned cookie set from a cross-site frame', () => {
+    const pk = { topLevelSite: 'http://127.0.0.1', hasCrossSiteAncestor: true };
+    expect(cookieUrl({ secure: true, domain: 'localhost', path: '/', partitionKey: pk })).toBe('https://localhost/');
+  });
+
+  it('ignores a partition whose site is a different host', () => {
+    const pk = { topLevelSite: 'http://other.test' };
+    expect(cookieUrl({ secure: true, domain: 'widget.test', path: '/', partitionKey: pk })).toBe('https://widget.test/');
+  });
+
+  it('defaults an empty path to /', () => {
+    expect(cookieUrl({ secure: false, domain: 'example.com', path: '' })).toBe('http://example.com/');
+  });
+});
+
+describe('isPartitioned', () => {
+  it('is true only with a top-level site', () => {
+    expect(isPartitioned({ partitionKey: { topLevelSite: 'https://a.com' } })).toBe(true);
+    expect(isPartitioned({ partitionKey: {} })).toBe(false);
+    expect(isPartitioned({ partitionKey: null })).toBe(false);
+    expect(isPartitioned({})).toBe(false);
+  });
+});
+
+describe('cookieBadges', () => {
+  it('adds a P badge naming the partition', () => {
+    const badges = cookieBadges({ secure: true, httpOnly: false, session: false, sameSite: 'no_restriction', partitionKey: { topLevelSite: 'https://shop.test', hasCrossSiteAncestor: true } });
+    const p = badges.find((b) => b.label === 'P')!;
+    expect(p.kind).toBe('partitioned');
+    expect(p.title).toContain('https://shop.test');
+    expect(p.title).toContain('cross-site');
+  });
+
+  it('gives every badge a class kind and a tooltip', () => {
+    for (const b of cookieBadges({ secure: true, httpOnly: true, session: true, sameSite: 'strict' })) {
+      expect(b.kind).toMatch(/^[a-z_-]+$/);
+      expect(b.title.length).toBeGreaterThan(3);
+    }
+  });
+});
+
+describe('domainAppliesToHost', () => {
+  it('matches the same host and parent domains', () => {
+    expect(domainAppliesToHost('app.example.com', 'app.example.com')).toBe(true);
+    expect(domainAppliesToHost('.example.com', 'app.example.com')).toBe(true);
+  });
+
+  it('does not match subdomains, lookalikes or empty domains', () => {
+    expect(domainAppliesToHost('api.example.com', 'example.com')).toBe(false);
+    expect(domainAppliesToHost('ample.com', 'example.com')).toBe(false);
+    expect(domainAppliesToHost('', 'example.com')).toBe(false);
+  });
+});
+
+// --- datetime-local conversion ---
+
+describe('toDatetimeLocal / fromDatetimeLocal', () => {
+  it('round-trips a minute-precision local time exactly (no UTC-offset drift)', () => {
+    const secs = fromDatetimeLocal('2026-09-15T10:30')!;
+    expect(toDatetimeLocal(secs)).toBe('2026-09-15T10:30');
+    expect(fromDatetimeLocal(toDatetimeLocal(secs))).toBe(secs);
+  });
+
+  it('formats in local time, matching the Date fields', () => {
+    const secs = 1820979829.5;
+    const d = new Date(secs * 1000);
+    expect(toDatetimeLocal(secs)).toBe(
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`,
+    );
+  });
+
+  it('returns null for blank or invalid input', () => {
+    expect(fromDatetimeLocal('')).toBeNull();
+    expect(fromDatetimeLocal('not a date')).toBeNull();
   });
 });
 
@@ -344,7 +395,7 @@ describe('change log truncation', () => {
       if (log.length > MAX_CHANGE_LOG) log.length = MAX_CHANGE_LOG;
     }
     expect(log).toHaveLength(500);
-    expect(log[0].timestamp).toBe(599);
-    expect(log[499].timestamp).toBe(100);
+    expect(log[0]!.timestamp).toBe(599);
+    expect(log[499]!.timestamp).toBe(100);
   });
 });

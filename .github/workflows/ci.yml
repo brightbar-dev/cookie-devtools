@@ -21,6 +21,8 @@ jobs:
       - run: npm ci
       - run: npx wxt prepare
       - run: npm test
+      # `wxt build` strips types without checking them, so only tsc can fail on a type error.
+      - run: npx tsc --noEmit
       - name: Build Chrome
         run: npx wxt build
       - name: Build Firefox

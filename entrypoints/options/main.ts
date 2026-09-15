@@ -1,3 +1,4 @@
+import { clampMaxLog } from '@/utils/monitor';
 import './style.css';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -6,7 +7,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const data = await browser.storage.local.get({ theme: 'auto', maxLog: 500 });
   themeSelect.value = data.theme as string;
-  maxLogSelect.value = String(data.maxLog);
+  maxLogSelect.value = String(clampMaxLog(data.maxLog));
+  document.getElementById('about-version')!.textContent = `Cookie DevTools v${browser.runtime.getManifest().version}`;
 
   themeSelect.addEventListener('change', () => {
     browser.storage.local.set({ theme: themeSelect.value });

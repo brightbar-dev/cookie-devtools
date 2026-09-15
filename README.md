@@ -5,19 +5,24 @@ Developer-focused cookie manager for Chrome with real-time monitoring, environme
 ## Features
 
 ### Cookie Management
-- View all cookies for the current site with search/filter
+- View all cookies for the current site with search/filter, including partitioned (CHIPS) cookies — first-party and those set by embedded cross-site frames
 - Add, edit, and delete cookies
-- Visual attribute badges: Secure, HttpOnly, SameSite, Session
+- Safe edits: the new cookie is written before the old one is removed, so a change the browser rejects never destroys the original; the error shows in the editor
+- Faithful edits: host-only, partition, cookie store and exact expiry are kept unless you change them
+- Validation before you save: SameSite=None and partitioned cookies need Secure, `__Secure-`/`__Host-` prefix rules, forbidden characters, the 4096-byte size limit, 400-day expiry cap, and a confirmation when an expiry in the past would delete the cookie
+- Delete All asks first, with the count, and both single deletes and Delete All can be undone for 10 seconds
+- Visual attribute badges: Secure, HttpOnly, SameSite, Session, Partitioned
 - One-click copy cookie values
 
-### Real-Time Monitor
-- Live feed of all cookie changes across all sites
-- Shows cause: explicit, expired, evicted, overwritten
-- Timestamps for every change
+### Change Monitor
+- Opt-in: nothing is recorded until you switch Record on
+- Record every site, or only the site you choose
+- Shows cause: explicit, expired, evicted, overwritten, with value and timestamp
+- The log stays in local extension storage, capped at the size set in Settings, and can be cleared from the Monitor tab
 
 ### Environment Profiles
 - Save cookie snapshots as named profiles (e.g., "dev-local", "staging-admin")
-- One-click profile loading with optional clear-first
+- One-click profile loading that replaces the site's cookies, reports what was restored, skips cookies that expired since the snapshot, and can be undone
 - Switch between environments instantly
 
 ### Developer Export
