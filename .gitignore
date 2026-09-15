@@ -20,3 +20,7 @@ node_modules/
 *.zip
 *.crx
 *.pem
+
+# Store image generation (store/tools)
+store/.raw/
+store/.cert/
