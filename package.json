@@ -1,6 +1,6 @@
 {
   "name": "cookie-devtools",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Developer-focused cookie manager with real-time monitoring, environment profiles, and export.",
   "private": true,
   "type": "module",
