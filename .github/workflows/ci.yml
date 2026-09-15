@@ -25,7 +25,9 @@ jobs:
       - run: npx tsc --noEmit
       - name: Build Chrome
         run: npx wxt build
-      # The install prompt must stay warning-free (see wxt.config.ts).
+      # Allowlist guard: fails if the manifest asks for more than it ships with today. The install
+      # prompt already shows one line, "Read and change all your data on all websites" (from
+      # <all_urls>); the script's header records how that was measured.
       - run: node scripts/check-manifest.mjs .output/chrome-mv3/manifest.json
       - name: Build Firefox
         run: npx wxt build --browser firefox

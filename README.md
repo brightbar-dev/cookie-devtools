@@ -1,6 +1,6 @@
 # Cookie DevTools
 
-Cookie editor and cookie manager for developers: edit safely, import from other tools with a preview, decode JWT/Base64/JSON values, protect and block cookies, watch changes live, and export to JSON, cookies.txt, curl or a Cookie header — in the popup or Chrome's side panel. No ads, no tracking, no install warnings.
+Cookie editor and cookie manager for developers: edit safely, import from other tools with a preview, decode JWT/Base64/JSON values, protect and block cookies, watch changes live, and export to JSON, cookies.txt, curl or a Cookie header — in the popup or Chrome's side panel. No ads, no tracking, and nothing leaves your device.
 
 ## Features
 
@@ -144,7 +144,7 @@ PERFECT FOR
 - Checking third-party and partitioned cookies
 
 PERMISSIONS, PLAINLY
-Cookie DevTools asks only for what a cookie editor needs: access to cookies on the sites you open, local storage for your settings, the address of the active tab, and the side panel. It never reads page content, never injects scripts, and never sends data anywhere.
+When you add Cookie DevTools, Chrome warns that it can "Read and change all your data on all websites". That is how Chrome describes access to every site, and a cookie editor needs it: an extension can read and write a site's cookies only if it has access to that site, and you might be working on any site. Cookie DevTools uses that access only for cookies, and to see which site the active tab is on. It never reads page content, never injects scripts, and never sends data anywhere. Beyond that it asks only for local storage for your settings and for the side panel — not for the tabs permission.
 
 ### Category
 Developer Tools
