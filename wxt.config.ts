@@ -34,6 +34,13 @@ export default defineConfig({
     // tailwind-lookup) turned out to read only tab.id, which was never gated. Load the
     // built extension unpacked and confirm the popup still shows the current domain
     // before this ships in a release.
+    //
+    // `sidePanel` is added by WXT for entrypoints/sidepanel and raises no install warning.
+    // There is deliberately no DevTools panel: measured 2026-09-15 in Chrome for Testing 151
+    // (chrome.developerPrivate.getExtensionsInfo), a `devtools_page` alone — no permission
+    // requested — makes the install prompt say "Read and change all your data on all
+    // websites". scripts/check-manifest.mjs fails CI if `tabs`, `devtools_page` or any other
+    // permission outside the warning-free set comes back.
     permissions: ['cookies', 'storage', 'activeTab'],
     host_permissions: ['<all_urls>'],
   },

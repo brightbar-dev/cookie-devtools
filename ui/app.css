@@ -1303,20 +1303,129 @@ footer {
 .import-list .is-skipped .imp-mark,
 .import-list .is-skipped .imp-detail { color: var(--warning-text); }
 
-/* --- Opened as a tab --- */
-body.page-mode {
+/* --- Surfaces: side panel, full tab --- */
+body.mode-sidepanel,
+body.mode-page {
   width: auto;
   max-height: none;
 }
 
-body.page-mode .container {
+body.mode-sidepanel .container,
+body.mode-page .container {
   height: 100vh;
+}
+
+body.mode-page .container {
   max-width: 960px;
   margin: 0 auto;
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
 }
 
-body.page-mode .cookie-name {
+body.mode-sidepanel .cross-promo {
+  display: none;
+}
+
+body:not(.mode-popup) .cookie-name {
   max-width: 240px;
+}
+
+/* Narrow surfaces (a side panel is usually 320-400px wide). */
+@media (max-width: 470px) {
+  .toolbar {
+    flex-wrap: wrap;
+  }
+
+  .toolbar #search {
+    flex: 1 1 100%;
+  }
+
+  .cookie-value {
+    display: none;
+  }
+
+  .cookie-item .cookie-name {
+    flex: 1;
+    max-width: none;
+  }
+
+  .domain-info {
+    flex-wrap: wrap;
+  }
+}
+
+/* --- Protect and Block --- */
+.badge-protected {
+  background: #1d4ed8;
+  color: #fff;
+}
+
+.rules-pill {
+  padding: 1px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.rules-pill:hover {
+  background: var(--bg-hover);
+}
+
+.modal-actions .push-left {
+  margin-right: auto;
+}
+
+.rule-kind {
+  flex-shrink: 0;
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rule-kind.is-protect {
+  background: #1d4ed8;
+}
+
+.rule-kind.is-block {
+  background: #b91c1c;
+}
+
+.rules-list li {
+  align-items: center;
+}
+
+.rules-list .action-btn {
+  margin-left: auto;
+}
+
+/* --- Monitor views --- */
+.monitor-views {
+  display: flex;
+  gap: 2px;
+  padding: 4px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.monitor-views [role="tab"] {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.monitor-views [aria-selected="true"] {
+  background: var(--bg-secondary);
+  color: var(--text);
+  font-weight: 600;
 }

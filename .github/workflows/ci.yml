@@ -25,5 +25,7 @@ jobs:
       - run: npx tsc --noEmit
       - name: Build Chrome
         run: npx wxt build
+      # The install prompt must stay warning-free (see wxt.config.ts).
+      - run: node scripts/check-manifest.mjs .output/chrome-mv3/manifest.json
       - name: Build Firefox
         run: npx wxt build --browser firefox
