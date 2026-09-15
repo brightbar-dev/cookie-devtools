@@ -81,3 +81,50 @@ p {
 p + p {
   margin-top: 4px;
 }
+
+.setting-help {
+  margin-bottom: 8px;
+}
+
+.rules-list {
+  list-style: none;
+}
+
+.rules-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid #eee;
+  font-size: 13px;
+}
+
+.rules-list li:first-child {
+  border-top: none;
+}
+
+.rule-kind {
+  flex-shrink: 0;
+  width: 72px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+}
+
+.rule-name {
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-weight: 600;
+}
+
+.rule-domain {
+  color: #666;
+}
+
+.rules-list .action-btn {
+  margin-left: auto;
+}
+
+.rules-empty {
+  color: #666;
+}

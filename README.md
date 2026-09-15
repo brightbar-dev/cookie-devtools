@@ -26,6 +26,15 @@ Developer-focused cookie manager for Chrome with real-time monitoring, environme
 - A preview before anything is written: how many will be created, how many replace existing cookies, and each skipped entry with the reason (already expired, SameSite=None without Secure, and so on)
 - A per-cookie result after import
 
+### Popup and Side Panel
+- The same cookie tools in the toolbar popup and in Chrome's side panel, which stays open and follows the tab you're viewing ("Open in side panel" from the popup)
+- The list refreshes as the site changes cookies; the Monitor's **Live** view shows those changes as they happen without saving anything
+
+### Protect and Block
+- **Protect** a cookie from its editor: when a site changes or deletes it, the saved value is put back. Your own edits move the lock; deleting it on purpose ends the protection
+- **Block** a cookie: it is deleted now and whenever a site sets it again — undo or unblock any time
+- Protected cookies carry a Lock badge; each site shows its rules, and Settings lists them all
+
 ### Change Monitor
 - Opt-in: nothing is recorded until you switch Record on
 - Record every site, or only the site you choose

@@ -1,5 +1,6 @@
 // Shapes of the background's replies, shared by the background and every page that talks to it.
 import type { CookieLike } from './cookies';
+import type { BlockRule, ProtectRule } from './rules';
 
 export interface Failure {
   name: string;
@@ -35,4 +36,19 @@ export interface ChangeEntry {
   removed: boolean;
   cause: string;
   cookie: CookieLike;
+}
+
+export interface CookiesResult {
+  cookies: CookieLike[];
+  /** Jar identities of every protected cookie. */
+  protectedIds: string[];
+  /** Protect and block rules that concern the requested page. */
+  protected: ProtectRule[];
+  blocked: BlockRule[];
+  partitionSupport: boolean;
+}
+
+export interface BlockResult {
+  rule: BlockRule;
+  removed: CookieLike[];
 }

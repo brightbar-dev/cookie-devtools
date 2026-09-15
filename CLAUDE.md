@@ -7,7 +7,7 @@ Built with [WXT](https://wxt.dev/) — builds for Chrome (MV3) and Firefox (MV2)
 
 ## Architecture
 - **entrypoints/background.ts** — Service worker. Cookie CRUD via `browser.cookies` API, change monitoring via `browser.cookies.onChanged`, profile management, import writes. All cookie reads and writes go through here.
-- **entrypoints/popup/** — Browser action popup with tabbed UI (Cookies, Monitor, Profiles): list with sort, filter chips, selection and sizes; editor, import and confirmation `<dialog>`s; undo toasts; export menu (copy or download); dark/light theme. Opened as `popup.html?url=<page>` it runs as a full tab for that page (used for file import, where a file picker could close the popup).
+- **entrypoints/popup/**, **entrypoints/sidepanel/** — thin surfaces that each call `mountApp` from `ui/app.ts` and differ only in how they find the page: the popup reads the active tab (or `?url=` when opened as a full tab, used for file import); the side panel follows the active tab via `tabs.onActivated`/`onUpdated`.
 - **entrypoints/options/** — Options page for theme, max log entries, data clearing.
 - **utils/cookies.ts** — Export formats, escaping, filtering, badges, cookie URL construction, datetime-local conversion.
 - **utils/writes.ts** — What to pass `cookies.set`/`remove` so a cookie keeps its identity (host-only, store, partition), cookie identity, edit/restore planning, partition-site candidates.
@@ -16,7 +16,8 @@ Built with [WXT](https://wxt.dev/) — builds for Chrome (MV3) and Firefox (MV2)
 - **utils/importer.ts** — `planImport`: detects JSON (ours, Cookie-Editor, EditThisCookie, Playwright), Netscape, Cookie/Set-Cookie headers and curl; normalises, validates, and reports what will be created or skipped and why. Writes nothing.
 - **utils/decode.ts** — Value inspector decoding: URL, Base64/Base64URL, JSON, JWT (decode only, never verify).
 - **utils/list.ts** — Sorting, filter chips, compact expiry, size totals. **utils/export.ts** — export text and filenames. **utils/messages.ts** — reply types shared by background and pages.
-- **ui/** — DOM modules shared by extension pages: `dom.ts` (toast, confirm, copy, download), `inspector.ts`, `import-dialog.ts`.
+- **ui/** — the shared UI: `app.ts` (tabs: Cookies, Monitor, Profiles; list with sort, chips, selection and sizes; editor with Protect/Block; import, rules and confirmation `<dialog>`s; undo toasts; export menu; live change feed), `markup.ts`, `app.css`, plus `dom.ts` (toast, confirm, copy, download), `inspector.ts`, `import-dialog.ts`.
+- **utils/rules.ts** — Protect/Block rules, `decideRuleAction` and `WriteGuard`. **utils/target.ts** — which page a surface works on.
 - **public/icon-{16,48,128}.png** — Extension icons.
 
 ## Key Implementation Details
@@ -26,6 +27,10 @@ Built with [WXT](https://wxt.dev/) — builds for Chrome (MV3) and Firefox (MV2)
 - **Partitioned (CHIPS) cookies**: `getAll({url})` omits them; `getAll({url, partitionKey: {}})` includes this host's in every partition; `getAll({partitionKey: {topLevelSite}})` returns cookies embedded third parties stored under a site. A first-party partitioned cookie's write URL must be same-site with its top-level site (http:// on a loopback dev server) or Chrome throws — `cookieUrl` handles it. Verified live in Chrome for Testing 151, 2026-09-15.
 - Monitor uses `browser.cookies.onChanged` with cause tracking (explicit, expired, evicted, overwritten). Recording is **off until the user turns it on** (`monitor` in storage), can be scoped to one site, and entries go through `ChangeLogBuffer` — at most one storage write per second, flushes serialised.
 - Delete All confirms with the count; deletes and profile loads return snapshots the popup offers to undo for 10 s.
+- **Surfaces never need `tabs`**: reading `tab.url` from `tabs.query` and `tabs.onUpdated` is covered by the `<all_urls>` host permission. The side panel adds only `sidePanel` (no install warning). Feature-detect `sidePanel`/`sidebarAction` — Firefox gets a `sidebar_action` from the same entrypoint.
+- **No DevTools panel, on purpose**: a `devtools_page` requests no permission but makes Chrome's install prompt say "Read and change all your data on all websites" (measured 2026-09-15; see `wxt.config.ts`). `scripts/check-manifest.mjs` fails CI if it, `tabs` or any other non-allowlisted permission appears.
+- **Protect / Block** (`rules` in storage): the background enforces them in its `cookies.onChanged` listener. Protect restores the saved state when a site changes or deletes the cookie (it ignores the `overwrite` removal and judges the new value's event); Block removes a named cookie whenever it is set. Every extension write first calls `guard.expect(identity)` so enforcement ignores its own events; restores are capped per cookie (`allowRestore`) and re-checked when the quiet window ends so a page write inside it cannot stick. A user's own edit or import of a protected cookie moves the lock; deleting it on purpose ends the protection.
+- The UI listens to `cookies.onChanged` itself for the page it shows: the list refreshes, and the Monitor's **Live** view lists changes in memory only — nothing is stored unless Record is on.
 - **Import** never writes before the preview: `planImport` → the dialog shows created / replaced / skipped-with-reason → `importCookies` (the same `writeCookies` path as undo and profiles). Imported cookies drop `storeId` so they land in the current store.
 - **Export** is formatted in the page from the cookies the list holds: the selection if any, otherwise what the filters show. Download is an anchor `download` of a blob — no `downloads` permission. Netscape marks HttpOnly with `#HttpOnly_`; curl single-quotes safely. Every re-importable format has a round-trip test in `tests/importer.test.ts`.
 - Profiles stored in `browser.storage.local` as named cookie snapshots; restore skips cookies that have expired since and reports them.
@@ -56,9 +61,10 @@ npm test
 - `tests/monitor.test.ts`: opt-in settings, site scope, batched and serialised log writes
 - `tests/importer.test.ts`: format detection, each parser, skip reasons, and export → import round trips
 - `tests/decode.test.ts`, `tests/list.test.ts`, `tests/export.test.ts`: inspector decoding, sort/chips/sizes, export text and filenames
+- `tests/rules.test.ts`: when Protect restores and Block removes, and the write guard's quiet window and restore cap; `tests/target.test.ts`: which pages have cookies
 
 ## Conventions
 - WXT framework with vanilla TypeScript (no UI framework)
 - Version: semver, managed by release-please; the popup and options page read it from the manifest
-- Requires `cookies`, `storage`, `activeTab` permissions and `<all_urls>` host permission (`tabs` deliberately dropped 2026-08-26 — see `wxt.config.ts`)
+- Requires `cookies`, `storage`, `activeTab` and `sidePanel` permissions and `<all_urls>` host permission. None raises an install warning — verified with `developerPrivate.getExtensionsInfo` in Chrome for Testing, and enforced by `scripts/check-manifest.mjs` in CI. `tabs` deliberately dropped 2026-08-26 — see `wxt.config.ts`
 - Do NOT add Claude/AI as co-author or contributor
