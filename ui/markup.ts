@@ -9,14 +9,14 @@ export const APP_MARKUP = `
       </div>
     </header>
 
-    <nav class="tabs">
-      <button class="tab active" data-tab="cookies">Cookies</button>
-      <button class="tab" data-tab="monitor">Monitor</button>
-      <button class="tab" data-tab="profiles">Profiles</button>
+    <nav class="tabs" role="tablist" aria-label="Views">
+      <button class="tab active" data-tab="cookies" role="tab" aria-selected="true" aria-controls="tab-cookies">Cookies</button>
+      <button class="tab" data-tab="monitor" role="tab" aria-selected="false" aria-controls="tab-monitor" tabindex="-1">Monitor</button>
+      <button class="tab" data-tab="profiles" role="tab" aria-selected="false" aria-controls="tab-profiles" tabindex="-1">Profiles</button>
     </nav>
 
     <!-- Cookies Tab -->
-    <section id="tab-cookies" class="tab-content active">
+    <section id="tab-cookies" class="tab-content active" role="tabpanel" aria-label="Cookies">
       <div class="toolbar">
         <input type="text" id="search" placeholder="Filter cookies..." autocomplete="off" aria-label="Filter cookies">
         <div class="sort-group">
@@ -47,12 +47,12 @@ export const APP_MARKUP = `
         <button id="btn-rules" class="rules-pill" title="Protected and blocked cookies for this site" hidden></button>
         <span id="list-stats" class="list-stats"></span>
       </div>
-      <div id="cookie-list" class="cookie-list"></div>
+      <div id="cookie-list" class="cookie-list" role="list" aria-label="Cookies" title="Arrow keys move, Enter edits, Space selects, Delete deletes"></div>
       <div id="cookie-empty" class="empty-state" style="display:none;">No cookies found for this site.</div>
     </section>
 
     <!-- Monitor Tab -->
-    <section id="tab-monitor" class="tab-content">
+    <section id="tab-monitor" class="tab-content" role="tabpanel" aria-label="Monitor">
       <div class="toolbar">
         <label class="record-toggle">
           <input type="checkbox" id="monitor-record" role="switch">
@@ -72,13 +72,13 @@ export const APP_MARKUP = `
     </section>
 
     <!-- Profiles Tab -->
-    <section id="tab-profiles" class="tab-content">
+    <section id="tab-profiles" class="tab-content" role="tabpanel" aria-label="Profiles">
       <div class="toolbar">
         <input type="text" id="profile-name" placeholder="Profile name..." autocomplete="off" aria-label="Profile name">
         <button id="btn-save-profile" class="action-btn">Save Current</button>
       </div>
       <div id="profile-list" class="profile-list"></div>
-      <div id="profiles-empty" class="empty-state" style="display:none;">No saved profiles. Save your current cookies as a named profile for quick switching.</div>
+      <div id="profiles-empty" class="empty-state" style="display:none;">No profiles yet. Save this site’s cookies under a name like “staging-admin”, then load them later to switch accounts or environments in one click.</div>
     </section>
 
     <!-- Export Menu (hidden by default) -->
@@ -217,6 +217,7 @@ export const APP_MARKUP = `
 
     <footer>
       <span id="version" class="version"></span>
+      <span class="kbd-hint" aria-hidden="true"><kbd>/</kbd> search · <kbd>↑</kbd><kbd>↓</kbd> move · <kbd>Enter</kbd> edit · <kbd>Del</kbd> delete</span>
       <span id="cookie-count" class="cookie-count"></span>
     </footer>
 `;

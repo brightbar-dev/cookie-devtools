@@ -30,6 +30,7 @@ Built with [WXT](https://wxt.dev/) — builds for Chrome (MV3) and Firefox (MV2)
 - **Surfaces never need `tabs`**: reading `tab.url` from `tabs.query` and `tabs.onUpdated` is covered by the `<all_urls>` host permission. The side panel adds only `sidePanel` (no install warning). Feature-detect `sidePanel`/`sidebarAction` — Firefox gets a `sidebar_action` from the same entrypoint.
 - **No DevTools panel, on purpose**: a `devtools_page` requests no permission but makes Chrome's install prompt say "Read and change all your data on all websites" (measured 2026-09-15; see `wxt.config.ts`). `scripts/check-manifest.mjs` fails CI if it, `tabs` or any other non-allowlisted permission appears.
 - **Protect / Block** (`rules` in storage): the background enforces them in its `cookies.onChanged` listener. Protect restores the saved state when a site changes or deletes the cookie (it ignores the `overwrite` removal and judges the new value's event); Block removes a named cookie whenever it is set. Every extension write first calls `guard.expect(identity)` so enforcement ignores its own events; restores are capped per cookie (`allowRestore`) and re-checked when the quiet window ends so a page write inside it cannot stick. A user's own edit or import of a protected cookie moves the lock; deleting it on purpose ends the protection.
+- **Keyboard**: `/` focuses search (↓ from search enters the list); in the list ↑/↓/Home/End move a single tab stop, Enter opens the editor, Space selects, Delete/Backspace deletes with undo; ←/→ switch tabs; closing the editor returns focus to its row.
 - The UI listens to `cookies.onChanged` itself for the page it shows: the list refreshes, and the Monitor's **Live** view lists changes in memory only — nothing is stored unless Record is on.
 - **Import** never writes before the preview: `planImport` → the dialog shows created / replaced / skipped-with-reason → `importCookies` (the same `writeCookies` path as undo and profiles). Imported cookies drop `storeId` so they land in the current store.
 - **Export** is formatted in the page from the cookies the list holds: the selection if any, otherwise what the filters show. Download is an anchor `download` of a blob — no `downloads` permission. Netscape marks HttpOnly with `#HttpOnly_`; curl single-quotes safely. Every re-importable format has a round-trip test in `tests/importer.test.ts`.
@@ -61,7 +62,8 @@ npm test
 - `tests/monitor.test.ts`: opt-in settings, site scope, batched and serialised log writes
 - `tests/importer.test.ts`: format detection, each parser, skip reasons, and export → import round trips
 - `tests/decode.test.ts`, `tests/list.test.ts`, `tests/export.test.ts`: inspector decoding, sort/chips/sizes, export text and filenames
-- `tests/rules.test.ts`: when Protect restores and Block removes, and the write guard's quiet window and restore cap; `tests/target.test.ts`: which pages have cookies
+- `tests/rules.test.ts`: when Protect restores and Block removes, and the event-precise write guard and restore cap; `tests/target.test.ts`: which pages have cookies and how the empty state explains the rest
+- `tests/contrast.test.ts`: reads `ui/app.css` (via `?raw`) and fails if any text/surface token pair, or white on a badge, drops below WCAG AA (4.5:1) in either theme — change colours there, not in component rules
 
 ## Conventions
 - WXT framework with vanilla TypeScript (no UI framework)
