@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseTarget } from '../utils/target';
+import { parseTarget, noTargetReason } from '../utils/target';
 
 describe('parseTarget', () => {
   it('keeps origin and path, dropping query and fragment', () => {
@@ -15,5 +15,27 @@ describe('parseTarget', () => {
     for (const raw of ['chrome://extensions/', 'file:///tmp/x.html', 'about:blank', 'chrome-extension://abc/popup.html', 'not a url', '', undefined, null]) {
       expect(parseTarget(raw)).toBeNull();
     }
+  });
+});
+
+describe('noTargetReason', () => {
+  it('explains browser pages', () => {
+    for (const raw of ['chrome://extensions/', 'chrome://newtab/', 'edge://settings', 'about:blank', 'chrome-extension://abc/options.html']) {
+      expect(noTargetReason(raw).title).toBe('Browser page');
+    }
+    expect(noTargetReason('chrome://settings').detail).toMatch(/have no cookies/);
+  });
+
+  it('explains local files and suggests localhost', () => {
+    expect(noTargetReason('file:///Users/me/index.html')).toEqual({
+      title: 'Local file',
+      detail: expect.stringMatching(/localhost/),
+    });
+  });
+
+  it('covers no page at all and other schemes', () => {
+    expect(noTargetReason(undefined).title).toBe('No page open');
+    expect(noTargetReason('ftp://files.example.com/').title).toBe('Not a website');
+    expect(noTargetReason('%%%').title).toBe('Not a website');
   });
 });

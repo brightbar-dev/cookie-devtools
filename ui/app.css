@@ -14,7 +14,7 @@
   --bg-hover: #eeeeee;
   --text: #1a1a1a;
   --text-secondary: #666666;
-  --text-muted: #999999;
+  --text-muted: #6b6b6b;
   --border: #e0e0e0;
   --accent: #2563eb;
   --accent-hover: #1d4ed8;
@@ -22,13 +22,15 @@
   --danger-hover: #b91c1c;
   --success: #16a34a;
   --warning: #d97706;
-  --badge-secure: #16a34a;
+  --badge-secure: #15803d;
   --badge-httponly: #7c3aed;
-  --badge-samesite-strict: #16a34a;
-  --badge-samesite-lax: #d97706;
+  --badge-samesite-strict: #15803d;
+  --badge-samesite-lax: #b45309;
   --badge-samesite-none: #dc2626;
-  --badge-session: #0891b2;
+  --badge-session: #0e7490;
   --badge-partitioned: #0f766e;
+  --badge-protected: #1d4ed8;
+  --on-accent: #ffffff;
   --danger-text: #b91c1c;
   --warning-text: #92400e;
   --success-text: #15803d;
@@ -42,7 +44,7 @@ body.dark {
   --bg-hover: #333333;
   --text: #e0e0e0;
   --text-secondary: #aaaaaa;
-  --text-muted: #777777;
+  --text-muted: #a0a0a0;
   --border: #3a3a3a;
   --accent: #60a5fa;
   --accent-hover: #3b82f6;
@@ -50,6 +52,7 @@ body.dark {
   --warning-text: #fcd34d;
   --success-text: #86efac;
   --focus: #93c5fd;
+  --on-accent: #0b1b33;
   --shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
@@ -197,7 +200,7 @@ header h1 {
 .action-btn.primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .action-btn.primary:hover {
@@ -205,7 +208,7 @@ header h1 {
 }
 
 .action-btn.danger {
-  color: var(--danger);
+  color: var(--danger-text);
 }
 
 .action-btn.danger:hover {
@@ -939,7 +942,7 @@ footer {
 .chip[aria-pressed="true"] {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .chip:disabled {
@@ -1356,7 +1359,7 @@ body:not(.mode-popup) .cookie-name {
 
 /* --- Protect and Block --- */
 .badge-protected {
-  background: #1d4ed8;
+  background: var(--badge-protected);
   color: #fff;
 }
 
@@ -1390,7 +1393,7 @@ body:not(.mode-popup) .cookie-name {
 }
 
 .rule-kind.is-protect {
-  background: #1d4ed8;
+  background: var(--badge-protected);
 }
 
 .rule-kind.is-block {
@@ -1428,4 +1431,74 @@ body:not(.mode-popup) .cookie-name {
   background: var(--bg-secondary);
   color: var(--text);
   font-weight: 600;
+}
+
+/* --- Keyboard focus --- */
+button:focus-visible,
+select:focus-visible,
+a:focus-visible,
+input[type="checkbox"]:focus-visible,
+.toolbar input[type="text"]:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.cookie-item:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+  background: var(--bg-hover);
+}
+
+.cookie-item:focus-visible .cookie-actions {
+  opacity: 1;
+}
+
+.kbd-hint {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.kbd-hint kbd {
+  padding: 0 4px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg-secondary);
+  font-family: inherit;
+  font-size: 10px;
+}
+
+@media (max-width: 470px) {
+  .kbd-hint {
+    display: none;
+  }
+}
+
+/* --- Empty states --- */
+.empty-state h3 {
+  margin-bottom: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.empty-state p {
+  max-width: 380px;
+  margin: 0 auto;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.empty-actions {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+/* An empty list gives its space to the empty state that follows it. */
+.cookie-list:empty,
+.change-log:empty,
+.profile-list:empty {
+  display: none;
 }

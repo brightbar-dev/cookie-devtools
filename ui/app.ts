@@ -21,7 +21,7 @@ import {
 import type { Chip, SortKey } from '@/utils/list';
 import { EXPORT_FORMATS, formatExport, exportFilename } from '@/utils/export';
 import type { ExportFormat } from '@/utils/export';
-import { parseTarget } from '@/utils/target';
+import { parseTarget, noTargetReason } from '@/utils/target';
 import type { BlockRule, ProtectRule } from '@/utils/rules';
 import type {
   RemoveResult, WriteReport, UpdateResult, LoadProfileResult, ChangeEntry, CookiesResult, BlockResult,
@@ -49,6 +49,8 @@ const SORT_KEYS: SortKey[] = ['name', 'domain', 'expiry', 'size'];
 const LIVE_MAX = 300;
 
 let host: AppHost;
+let rawTargetUrl: string | undefined;
+let focusedRowId: string | null = null;
 let currentUrl = '';
 let currentDomain = '';
 let currentIsHttps = false;
@@ -95,6 +97,7 @@ export async function mountApp(root: HTMLElement, appHost: AppHost) {
   setupMonitor();
   setupProfiles();
   setupRules();
+  setupKeyboard();
   setupSidePanelButton();
   setupLiveUpdates();
   setupImportDialog({
@@ -126,6 +129,7 @@ async function refreshTarget(): Promise<boolean> {
   } catch {
     raw = undefined;
   }
+  rawTargetUrl = raw;
   const target = parseTarget(raw);
   const nextUrl = target?.url ?? '';
   const changed = nextUrl !== currentUrl;
@@ -200,17 +204,90 @@ function isTabActive(name: string): boolean {
 }
 
 function setupTabs() {
-  document.querySelectorAll('.tab').forEach((tab) => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach((tc) => tc.classList.remove('active'));
-      tab.classList.add('active');
-      const tabName = (tab as HTMLElement).dataset.tab;
-      el('tab-' + tabName).classList.add('active');
+  const tabs = [...document.querySelectorAll<HTMLElement>('.tab')];
+  const activate = (tab: HTMLElement) => {
+    for (const t of tabs) {
+      const on = t === tab;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+    }
+    document.querySelectorAll('.tab-content').forEach((tc) => tc.classList.remove('active'));
+    const tabName = tab.dataset.tab;
+    el('tab-' + tabName).classList.add('active');
 
-      if (tabName === 'monitor') loadChangeLog();
-      if (tabName === 'profiles') loadProfiles();
+    if (tabName === 'monitor') loadChangeLog();
+    if (tabName === 'profiles') loadProfiles();
+  };
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => activate(tab));
+    tab.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length]!;
+      next.focus();
+      activate(next);
     });
+  });
+}
+
+// Keyboard: / to search, arrows through the list, Enter edits, Space selects, Delete deletes (with undo).
+
+function focusRowById(id: string | null) {
+  if (!id) return;
+  const index = shownCookies.findIndex((c) => cookieIdentity(c) === id);
+  const row = el('cookie-list').querySelectorAll<HTMLElement>('.cookie-item')[index];
+  if (!row) return;
+  el('cookie-list').querySelectorAll<HTMLElement>('.cookie-item').forEach((r) => { r.tabIndex = -1; });
+  row.tabIndex = 0;
+  row.focus();
+}
+
+function setupKeyboard() {
+  document.addEventListener('keydown', (e) => {
+    const target = e.target as HTMLElement;
+    const typing = !!target.closest('input, textarea, select, [contenteditable="true"]');
+    const dialogOpen = !!document.querySelector('dialog[open]');
+    const search = input('search');
+    if (e.key === '/' && !typing && !dialogOpen && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      e.preventDefault();
+      if (!isTabActive('cookies')) document.querySelector<HTMLElement>('.tab[data-tab="cookies"]')!.click();
+      search.focus();
+      search.select();
+    } else if (target === search && e.key === 'Escape' && search.value) {
+      e.preventDefault();
+      search.value = '';
+      renderCookies();
+    } else if (target === search && e.key === 'ArrowDown' && shownCookies[0]) {
+      e.preventDefault();
+      focusRowById(cookieIdentity(shownCookies[0]));
+    }
+  });
+
+  el('cookie-list').addEventListener('keydown', (e) => {
+    const row = e.target as HTMLElement;
+    if (!row.classList.contains('cookie-item')) return; // buttons and checkboxes keep their own keys
+    const rows = [...el('cookie-list').querySelectorAll<HTMLElement>('.cookie-item')];
+    const index = rows.indexOf(row);
+    const cookie = shownCookies[index];
+    if (!cookie) return;
+    const idAt = (i: number) => (shownCookies[i] ? cookieIdentity(shownCookies[i]!) : null);
+    switch (e.key) {
+      case 'ArrowDown': focusRowById(idAt(Math.min(index + 1, rows.length - 1))); break;
+      case 'ArrowUp': focusRowById(idAt(Math.max(index - 1, 0))); break;
+      case 'Home': focusRowById(idAt(0)); break;
+      case 'End': focusRowById(idAt(rows.length - 1)); break;
+      case 'Enter': openEditor(cookie); break;
+      case ' ': row.querySelector<HTMLInputElement>('.row-select')!.click(); break;
+      case 'Delete':
+      case 'Backspace': {
+        const next = idAt(index + 1) ?? idAt(index - 1);
+        void deleteCookie(cookie).then(() => focusRowById(next));
+        break;
+      }
+      default: return;
+    }
+    e.preventDefault();
   });
 }
 
@@ -259,6 +336,16 @@ function setupListControls() {
     renderCookies();
   });
   el('btn-delete-selected').addEventListener('click', deleteSelected);
+  el('cookie-empty').addEventListener('click', (e) => {
+    const action = (e.target as HTMLElement).closest<HTMLElement>('[data-empty]')?.dataset.empty;
+    if (action === 'add') openEditor(null);
+    else if (action === 'import') openImportDialog();
+    else if (action === 'clear-filters') {
+      input('search').value = '';
+      activeChips.clear();
+      renderCookies();
+    }
+  });
   el('btn-clear-selection').addEventListener('click', () => {
     selected.clear();
     renderCookies();
@@ -287,12 +374,13 @@ async function loadCookies() {
     protectedHere = response.protected || [];
     blockedHere = response.blocked || [];
   } else {
-    domainInfo.textContent = 'No active page';
+    domainInfo.textContent = noTargetReason(rawTargetUrl).title;
     allCookies = [];
     protectedIds = new Set();
     protectedHere = [];
     blockedHere = [];
   }
+  for (const id of ['btn-add', 'btn-export', 'btn-delete-all']) el<HTMLButtonElement>(id).disabled = !currentDomain;
   renderCookies();
   renderRulesPill();
 }
@@ -345,6 +433,7 @@ function renderCookies() {
   const list = el('cookie-list');
   const empty = el('cookie-empty');
   const now = Date.now() / 1000;
+  const listHadFocus = list.contains(document.activeElement);
   const searched = filterCookies(allCookies, input('search').value);
   shownCookies = sortCookies(applyChips(searched, activeChips), sortKey, sortDir);
 
@@ -357,11 +446,16 @@ function renderCookies() {
 
   if (shownCookies.length === 0) {
     list.innerHTML = '';
-    empty.textContent = allCookies.length ? 'No cookies match the filter.' : 'No cookies found for this site.';
+    empty.innerHTML = emptyStateHtml();
     empty.style.display = 'block';
     return;
   }
   empty.style.display = 'none';
+
+  // One row is in the tab order at a time; arrow keys move it.
+  const tabStop = shownCookies.some((c) => cookieIdentity(c) === focusedRowId)
+    ? focusedRowId
+    : cookieIdentity(shownCookies[0]!);
 
   list.innerHTML = shownCookies.map((cookie, i) => {
     const id = cookieIdentity(cookie);
@@ -379,7 +473,7 @@ function renderCookies() {
       : `Expires ${new Date(cookie.expirationDate * 1000).toLocaleString()} (${expiryLabel(cookie, now)})`;
 
     return `
-      <div class="cookie-item${isSelected ? ' is-selected' : ''}${isPartitioned(cookie) ? ' is-partitioned' : ''}${isProtected ? ' is-protected' : ''}" data-index="${i}">
+      <div class="cookie-item${isSelected ? ' is-selected' : ''}${isPartitioned(cookie) ? ' is-partitioned' : ''}${isProtected ? ' is-protected' : ''}" data-index="${i}" role="listitem" tabindex="${id === tabStop ? 0 : -1}">
         <input type="checkbox" class="row-select" aria-label="Select ${label}"${isSelected ? ' checked' : ''}>
         <span class="cookie-name" title="${name}">${label}</span>
         <span class="cookie-value" title="${escapeHtml(cookie.value)}">${escapeHtml(cookie.value)}</span>
@@ -398,6 +492,7 @@ function renderCookies() {
     const cookie = shownCookies[parseInt(item.dataset.index!, 10)]!;
     const id = cookieIdentity(cookie);
 
+    item.addEventListener('focus', () => { focusedRowId = id; });
     const box = item.querySelector<HTMLInputElement>('.row-select')!;
     box.addEventListener('click', (e) => e.stopPropagation());
     box.addEventListener('change', () => {
@@ -420,6 +515,25 @@ function renderCookies() {
     });
     item.addEventListener('click', () => openEditor(cookie));
   });
+  if (listHadFocus) focusRowById(tabStop);
+}
+
+function emptyStateHtml(): string {
+  if (!currentDomain) {
+    const reason = noTargetReason(rawTargetUrl);
+    return `<h3>${escapeHtml(reason.title)}</h3><p>${escapeHtml(reason.detail)}</p>`;
+  }
+  if (allCookies.length) {
+    return `<h3>No cookies match</h3>
+      <p>Nothing on ${escapeHtml(currentDomain)} matches the filter and chips you picked.</p>
+      <div class="empty-actions"><button type="button" class="action-btn" data-empty="clear-filters">Clear filters</button></div>`;
+  }
+  return `<h3>No cookies on ${escapeHtml(currentDomain)} yet</h3>
+    <p>Sites set cookies as you sign in and browse, and they appear here as it happens. You can also add one or import an export.</p>
+    <div class="empty-actions">
+      <button type="button" class="action-btn" data-empty="add">+ Add cookie</button>
+      <button type="button" class="action-btn" data-empty="import">Import</button>
+    </div>`;
 }
 
 async function deleteCookie(cookie: CookieLike) {
@@ -571,6 +685,8 @@ function setupEditor() {
   dialog.addEventListener('click', (e) => {
     if (e.target === dialog) closeEditor();
   });
+  // Back to the row the editor was opened from (Esc, Cancel or Save).
+  dialog.addEventListener('close', () => focusRowById(focusedRowId));
 
   input('edit-session').addEventListener('change', () => {
     const expires = input('edit-expires');
@@ -935,7 +1051,7 @@ async function loadChangeLog() {
 function savedEmptyText(): string {
   return monitorSettings.recording
     ? 'Recording. Changes show up here as sites set, update and expire cookies.'
-    : 'Nothing recorded. Turn on Record to log cookie changes as they happen.';
+    : 'Recording is off. Turn on Record to keep a log of cookie changes across visits — set, overwritten, expired and evicted.';
 }
 
 function renderMonitorLists() {

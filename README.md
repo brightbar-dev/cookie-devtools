@@ -54,7 +54,8 @@ Developer-focused cookie manager for Chrome with real-time monitoring, environme
 - **Cookie header**: Raw header string for HTTP requests (re-importable)
 
 ### Other
-- Dark mode (auto-detects system preference)
+- Dark mode (auto-detects system preference); colours meet WCAG AA in both themes, checked by a test
+- Keyboard: `/` to search, arrow keys through the list, Enter to edit, Space to select, Delete to delete (with undo)
 - No ads, no tracking, no data collection
 - Minimal, fast popup UI
 
