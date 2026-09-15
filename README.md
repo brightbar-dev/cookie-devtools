@@ -103,7 +103,7 @@ Developer cookie manager with real-time monitoring, environment profiles, and on
 ### Detailed Description
 Cookie DevTools is a cookie editor and cookie manager built for developers. See, edit, import, export, decode and protect the cookies of the site you're working on — in the toolbar popup or in Chrome's side panel.
 
-No ads. No tracking. No permission warnings at install. Nothing you do here leaves your device.
+No ads. No tracking. Nothing you do here leaves your device.
 
 EDIT COOKIES SAFELY
 - Every cookie for the current site, including partitioned (CHIPS) cookies set by embedded frames
