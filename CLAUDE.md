@@ -7,7 +7,7 @@ Built with [WXT](https://wxt.dev/) — builds for Chrome (MV3) and Firefox (MV2)
 
 ## Architecture
 - **entrypoints/background.ts** — Service worker. Cookie CRUD via `browser.cookies` API, change monitoring via `browser.cookies.onChanged`, profile management, import writes. All cookie reads and writes go through here.
-- **entrypoints/popup/**, **entrypoints/sidepanel/** — thin surfaces that each call `mountApp` from `ui/app.ts` and differ only in how they find the page: the popup reads the active tab (or `?url=` when opened as a full tab, used for file import); the side panel follows the active tab via `tabs.onActivated`/`onUpdated`.
+- **entrypoints/popup/**, **entrypoints/sidepanel/**, **entrypoints/devtools-panel/** — thin surfaces that each call `mountApp` from `ui/app.ts` and differ only in how they find the page: the popup reads the active tab (or `?url=` when opened as a full tab, used for file import); the side panel follows the active tab via `tabs.onActivated`/`onUpdated`; the DevTools panel follows `devtools.inspectedWindow.tabId` via `tabs.get`, `devtools.network.onNavigated` and `tabs.onUpdated`. **entrypoints/devtools/** only registers that panel (`devtools.panels.create`). Both DevTools entrypoints carry `manifest.exclude: ['firefox']`: Firefox DevTools pages get no cookies or tabs API.
 - **entrypoints/options/** — Options page for theme, max log entries, data clearing.
 - **utils/cookies.ts** — Export formats, escaping, filtering, badges, cookie URL construction, datetime-local conversion.
 - **utils/writes.ts** — What to pass `cookies.set`/`remove` so a cookie keeps its identity (host-only, store, partition), cookie identity, edit/restore planning, partition-site candidates.
@@ -63,7 +63,8 @@ npm test
 - `tests/monitor.test.ts`: opt-in settings, site scope, batched and serialised log writes
 - `tests/importer.test.ts`: format detection, each parser, skip reasons, and export → import round trips
 - `tests/decode.test.ts`, `tests/list.test.ts`, `tests/export.test.ts`: inspector decoding, sort/chips/sizes, export text and filenames
-- `tests/rules.test.ts`: when Protect restores and Block removes, and the event-precise write guard and restore cap; `tests/target.test.ts`: which pages have cookies and how the empty state explains the rest
+- `tests/rules.test.ts`: when Protect restores and Block removes, and the event-precise write guard and restore cap; `tests/target.test.ts`: which pages have cookies, how the empty state explains the rest, and which tab updates move a surface to a new page
+- `tests/manifest.test.ts`: the CI allowlist guard in `scripts/check-manifest.mjs` (permissions, optional permissions, hosts, no `content_scripts`)
 - `tests/contrast.test.ts`: reads `ui/app.css` (via `?raw`) and fails if any text/surface token pair, or white on a badge, drops below WCAG AA (4.5:1) in either theme — change colours there, not in component rules
 
 ## Conventions

@@ -1,5 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { parseTarget, noTargetReason } from '../utils/target';
+import { parseTarget, noTargetReason, tabUpdateMovesTarget } from '../utils/target';
+
+describe('tabUpdateMovesTarget', () => {
+  it('refreshes on a new URL or a finished load, not on title, favicon or loading changes', () => {
+    expect(tabUpdateMovesTarget({ url: 'https://example.com/next' })).toBe(true);
+    expect(tabUpdateMovesTarget({ status: 'complete' })).toBe(true);
+    expect(tabUpdateMovesTarget({ status: 'loading' })).toBe(false);
+    expect(tabUpdateMovesTarget({})).toBe(false);
+  });
+});
 
 describe('parseTarget', () => {
   it('keeps origin and path, dropping query and fragment', () => {

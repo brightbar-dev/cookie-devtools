@@ -1306,16 +1306,22 @@ footer {
 .import-list .is-skipped .imp-mark,
 .import-list .is-skipped .imp-detail { color: var(--warning-text); }
 
-/* --- Surfaces: side panel, full tab --- */
+/* --- Surfaces: side panel, DevTools panel, full tab --- */
 body.mode-sidepanel,
+body.mode-devtools,
 body.mode-page {
   width: auto;
   max-height: none;
 }
 
 body.mode-sidepanel .container,
+body.mode-devtools .container,
 body.mode-page .container {
   height: 100vh;
+}
+
+body.mode-devtools .cross-promo {
+  display: none;
 }
 
 body.mode-page .container {
