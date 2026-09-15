@@ -112,7 +112,7 @@ const small = `<!doctype html><html><head><meta charset="utf-8"><style>${base}
 </style></head><body><div class="wrap">
   <div class="row"><img src="file://${ICON}"><h1>Cookie<br>DevTools</h1></div>
   <div class="tag">Edit · Import · Decode · Protect</div>
-  <div class="trust">No ads · No install warnings · Stays on your device</div>
+  <div class="trust">No ads · No tracking · Stays on your device</div>
 </div></body></html>`;
 
 const marquee = `<!doctype html><html><head><meta charset="utf-8"><style>${base}
@@ -131,7 +131,7 @@ const marquee = `<!doctype html><html><head><meta charset="utf-8"><style>${base}
     <div class="row"><img src="file://${ICON}">Cookie DevTools</div>
     <h1>The cookie editor<br>built for developers</h1>
     <p>Import from any tool, decode JWTs, protect and block cookies, and watch changes live — all on your device.</p>
-    <div class="pills"><span>JWT &amp; Base64 decoding</span><span>Import with preview</span><span>Protect &amp; block</span><span>Side panel</span><span>No ads · No install warnings</span></div>
+    <div class="pills"><span>JWT &amp; Base64 decoding</span><span>Import with preview</span><span>Protect &amp; block</span><span>Side panel</span><span>No ads · No tracking</span></div>
   </div>
   <div class="shot"><img src="file://${RAW}/6-list-dark.png"></div>
 </div></body></html>`;

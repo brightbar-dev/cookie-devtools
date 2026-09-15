@@ -5,9 +5,9 @@ export default defineConfig({
     name: '__MSG_appName__',
     description: '__MSG_appDescription__',
     default_locale: 'en',
-    // `tabs` deliberately NOT requested (removed 2026-08-26). The only tabs API this
-    // extension calls is browser.tabs.query({active:true,currentWindow:true}) in
-    // entrypoints/popup/main.ts, and it reads exactly one field off the result: tab.url.
+    // `tabs` deliberately NOT requested (removed 2026-08-26). The surfaces call
+    // browser.tabs.query({active:true,currentWindow:true}) and tabs.onActivated/onUpdated, and
+    // the only field they read off a tab is tab.url.
     //
     // Chrome's own reference for the Tabs API, quoted verbatim (fetched 2026-08-26 from
     // developer.chrome.com/docs/extensions/reference/api/tabs):
@@ -25,22 +25,24 @@ export default defineConfig({
     //
     // So tab.url is unlocked twice over here — by `<all_urls>` below, and by `activeTab`
     // when a user has narrowed site access to on-click (opening the popup IS the
-    // invocation). `tabs` bought nothing and cost the "Read your browsing history"
-    // install warning, which is the scariest string in the whole install prompt for an
-    // extension whose entire pitch is that it does not track you.
+    // invocation). `tabs` would buy nothing the extension uses.
     //
-    // NOT verified by running it: the reasoning above is a citation, not a smoke test,
-    // and the two sibling extensions that looked like precedent (devtools-pro,
-    // tailwind-lookup) turned out to read only tab.id, which was never gated. Load the
-    // built extension unpacked and confirm the popup still shows the current domain
-    // before this ships in a release.
+    // Verified by running it (2026-09-15, Chrome for Testing 151, no stubs): with no `tabs`
+    // permission, the popup opened by a real toolbar click (CDP Extensions.triggerAction) and the
+    // side panel opened from its button both list the current site's cookies, and the side panel
+    // follows the tab when it navigates to another origin.
     //
-    // `sidePanel` is added by WXT for entrypoints/sidepanel and raises no install warning.
-    // There is deliberately no DevTools panel: measured 2026-09-15 in Chrome for Testing 151
-    // (chrome.developerPrivate.getExtensionsInfo), a `devtools_page` alone — no permission
-    // requested — makes the install prompt say "Read and change all your data on all
-    // websites". scripts/check-manifest.mjs fails CI if `tabs`, `devtools_page` or any other
-    // permission outside the warning-free set comes back.
+    // Install warnings, measured the same day with chrome.management.getPermissionWarningsByManifest
+    // (never developerPrivate's simplePermissions, which omits host-permission warnings):
+    //   this manifest (WXT adds sidePanel)   "Read and change all your data on all websites"
+    //   plus `tabs` or a `devtools_page`     no extra line
+    //   without host_permissions             no warning; plus `tabs`: "Read your browsing history"
+    // So dropping `tabs` did not shorten today's prompt — the all-sites line already covers tab
+    // URLs — but the extension asks for nothing it does not use. The all-sites line is the price of
+    // reading and writing cookies on any site: chrome.cookies ignores `activeTab` (a toolbar click
+    // on a manifest without host_permissions reveals the tab URL, yet cookies.getAll returns
+    // nothing and cookies.set fails with "No host permissions for cookies").
+    // scripts/check-manifest.mjs fails CI if the permission set grows.
     permissions: ['cookies', 'storage', 'activeTab'],
     host_permissions: ['<all_urls>'],
   },
