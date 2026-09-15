@@ -19,6 +19,7 @@ Built with [WXT](https://wxt.dev/) — builds for Chrome (MV3) and Firefox (MV2)
 - **ui/** — the shared UI: `app.ts` (tabs: Cookies, Monitor, Profiles; list with sort, chips, selection and sizes; editor with Protect/Block; import, rules and confirmation `<dialog>`s; undo toasts; export menu; live change feed), `markup.ts`, `app.css`, plus `dom.ts` (toast, confirm, copy, download), `inspector.ts`, `import-dialog.ts`.
 - **utils/rules.ts** — Protect/Block rules, `decideRuleAction` and `WriteGuard`. **utils/target.ts** — which page a surface works on.
 - **public/icon-{16,48,128}.png** — Extension icons.
+- **store/** — `cws.json` (listing text, single purpose, permission justifications), `screenshots/` and `promo/` (generated from the real build by `store/tools/`; regenerate them in any PR that changes what they show — see `store/tools/README.md`). `store-assets/` is the superseded v0.2 set.
 
 ## Key Implementation Details
 - Popup gets domain context from active tab, sends messages to background for all cookie operations. The background answers with `sendResponse` + `return true`, not a returned promise, so it works on every Chrome and Firefox version.

@@ -1,6 +1,6 @@
 # Cookie DevTools
 
-Developer-focused cookie manager for Chrome with real-time monitoring, environment profiles, and one-click export to curl/wget.
+Cookie editor and cookie manager for developers: edit safely, import from other tools with a preview, decode JWT/Base64/JSON values, protect and block cookies, watch changes live, and export to JSON, cookies.txt, curl or a Cookie header — in the popup or Chrome's side panel. No ads, no tracking, no install warnings.
 
 ## Features
 
@@ -101,29 +101,56 @@ Cookie DevTools
 Developer cookie manager with real-time monitoring, environment profiles, and one-click export to curl. No tracking.
 
 ### Detailed Description
-Cookie DevTools is a developer-focused cookie manager built for debugging, testing, and environment switching.
+Cookie DevTools is a cookie editor and cookie manager built for developers. See, edit, import, export, decode and protect the cookies of the site you're working on — in the toolbar popup or in Chrome's side panel.
 
-Unlike basic cookie editors, Cookie DevTools gives you the tools developers actually need: a real-time monitor that shows cookie changes as they happen, environment profiles to save and switch between cookie states, and one-click export to curl, cookie files, or raw headers.
+No ads. No tracking. No permission warnings at install. Nothing you do here leaves your device.
 
-Features:
-- View, add, edit, and delete cookies for the current site
-- Real-time cookie change monitor with cause tracking (explicit, expired, evicted, overwritten)
-- Environment profiles — save and restore named cookie snapshots
-- Export to JSON, cookie file (curl/wget), curl command, or Cookie header string
-- Visual attribute badges: Secure, HttpOnly, SameSite, Session
-- Search and filter across cookie names, values, and domains
-- Dark mode with system preference auto-detection
-- No tracking, no ads, no data collection
+EDIT COOKIES SAFELY
+- Every cookie for the current site, including partitioned (CHIPS) cookies set by embedded frames
+- Add, edit and delete with checks for what the browser would reject: SameSite=None without Secure, __Host- and __Secure- prefix rules, the 4096-byte limit, invalid characters
+- Edits never destroy the original: if the browser refuses a change, the cookie stays as it was
+- Host-only, partition and exact expiry are kept unless you change them
+- Delete All asks first, and deletes can be undone
 
-Perfect for:
-- Debugging authentication flows
-- Switching between dev/staging/prod cookie environments
-- Generating curl commands with session cookies
-- Monitoring how websites set and modify cookies
-- QA testing cookie behavior across environments
+DECODE COOKIE VALUES
+- JWT: header and payload, with exp, iat and nbf as dates and a clear expired state (decoded on your device, never verified or sent anywhere)
+- URL-encoded, Base64 and Base64URL values, and pretty-printed JSON, each with a copy button
+
+IMPORT AND EXPORT COOKIES
+- Import JSON exported by other cookie editors, Playwright or Puppeteer; a Netscape cookies.txt file; Set-Cookie or Cookie headers; or a curl command
+- Preview before anything is written: what will be created, what will be replaced, and what will be skipped and why
+- Export cookies to JSON, cookies.txt (curl/wget), a curl command or a Cookie header — copy or download, for every cookie or just the ones you select
+
+PROTECT AND BLOCK
+- Protect a cookie: when a site changes or deletes it, your saved value is put back
+- Block a cookie: it is deleted whenever a site sets it again
+
+WATCH COOKIE CHANGES
+- Live view of cookie changes on the page you're on
+- Optional recording for one site or all sites, with the cause (set, overwritten, expired, evicted), value and time — off until you turn it on, and kept only on your device
+
+BUILT FOR DAILY DEVELOPER WORK
+- Environment profiles: save a site's cookies as "staging-admin" and switch back in one click
+- Sort by name, domain, expiry or size; filter by Secure, HttpOnly, Session, Partitioned or SameSite=None
+- Side panel that stays open and follows your tabs
+- Keyboard friendly: / to search, arrow keys to move, Enter to edit, Delete with undo
+- Dark mode, with WCAG AA contrast in both themes
+
+PERFECT FOR
+- Debugging sign-in, session and CSRF problems
+- Moving a test session between browsers, profiles or automated tests
+- Testing consent banners, A/B buckets and feature flags
+- Generating curl commands with your session cookies
+- Checking third-party and partitioned cookies
+
+PERMISSIONS, PLAINLY
+Cookie DevTools asks only for what a cookie editor needs: access to cookies on the sites you open, local storage for your settings, the address of the active tab, and the side panel. It never reads page content, never injects scripts, and never sends data anywhere.
 
 ### Category
 Developer Tools
 
-### Search Keywords
-cookie, cookie editor, cookie manager, cookie devtools, editthiscookie, developer tools, cookie export, curl cookies, cookie monitor
+### Search terms the description is written for
+cookie editor, cookie manager, edit cookies, import cookies, export cookies, cookies.txt, curl cookies, JWT decoder, partitioned cookies (CHIPS), cookie monitor. Competitor names are deliberately not used.
+
+### Images
+`store/screenshots/` (5 × 1280×800) and `store/promo/` (440×280, 1400×560), generated from the real extension — see `store/tools/README.md`.
