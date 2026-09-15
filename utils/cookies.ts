@@ -1,5 +1,10 @@
 // Shared cookie utility functions — extracted for testability
 
+export interface PartitionKey {
+  topLevelSite?: string;
+  hasCrossSiteAncestor?: boolean;
+}
+
 export interface CookieLike {
   name: string;
   value: string;
@@ -11,6 +16,8 @@ export interface CookieLike {
   expirationDate?: number | null;
   session?: boolean;
   storeId?: string;
+  hostOnly?: boolean;
+  partitionKey?: PartitionKey | null;
 }
 
 export function toNetscape(cookies: CookieLike[]): string {
@@ -37,10 +44,41 @@ export function toHeaderString(cookies: CookieLike[]): string {
   return cookies.map((c) => `${c.name}=${c.value}`).join('; ');
 }
 
-export function cookieUrl(cookie: Pick<CookieLike, 'secure' | 'domain' | 'path'>): string {
-  const protocol = cookie.secure ? 'https' : 'http';
-  const domain = cookie.domain.startsWith('.') ? cookie.domain.slice(1) : cookie.domain;
-  return `${protocol}://${domain}${cookie.path}`;
+export function cookieHost(domain: string): string {
+  return domain.startsWith('.') ? domain.slice(1) : domain;
+}
+
+/** True when a cookie on `cookieDomain` is sent to `host`: the same host or a parent domain. */
+export function domainAppliesToHost(cookieDomain: string, host: string): boolean {
+  const d = cookieHost(cookieDomain).toLowerCase();
+  const h = host.toLowerCase();
+  return !!d && (h === d || h.endsWith('.' + d));
+}
+
+export function isPartitioned(cookie: Pick<CookieLike, 'partitionKey'>): boolean {
+  return !!cookie.partitionKey?.topLevelSite;
+}
+
+/**
+ * The URL chrome.cookies.set/remove need to address a cookie. Secure cookies use https,
+ * except a partitioned cookie with no cross-site ancestor: Chrome requires that URL to be
+ * same-site with the top-level site, and on a loopback dev server that site is http://.
+ */
+export function cookieUrl(cookie: Pick<CookieLike, 'secure' | 'domain' | 'path'> & { partitionKey?: PartitionKey | null }): string {
+  const host = cookieHost(cookie.domain);
+  let protocol = cookie.secure ? 'https' : 'http';
+  const pk = cookie.partitionKey;
+  if (pk?.topLevelSite && !pk.hasCrossSiteAncestor) {
+    try {
+      const site = new URL(pk.topLevelSite);
+      if (host === site.hostname || host.endsWith('.' + site.hostname)) {
+        protocol = site.protocol.replace(':', '');
+      }
+    } catch {
+      // not a URL; keep the default scheme
+    }
+  }
+  return `${protocol}://${host}${cookie.path || '/'}`;
 }
 
 export function escapeHtml(str: string): string {
@@ -64,7 +102,21 @@ export function formatExpiry(cookie: Pick<CookieLike, 'session' | 'expirationDat
   return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export function filterCookies(cookies: CookieLike[], filter: string): CookieLike[] {
+/** Epoch seconds → the local-time "YYYY-MM-DDTHH:MM" string a datetime-local input expects. */
+export function toDatetimeLocal(epochSeconds: number): string {
+  const d = new Date(epochSeconds * 1000);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** A datetime-local value (local time, no zone) → epoch seconds, or null when blank/invalid. */
+export function fromDatetimeLocal(value: string): number | null {
+  if (!value) return null;
+  const t = new Date(value).getTime();
+  return Number.isNaN(t) ? null : t / 1000;
+}
+
+export function filterCookies<T extends CookieLike>(cookies: T[], filter: string): T[] {
   const f = filter.toLowerCase();
   return cookies.filter((c) =>
     c.name.toLowerCase().includes(f) ||
@@ -73,56 +125,34 @@ export function filterCookies(cookies: CookieLike[], filter: string): CookieLike
   );
 }
 
-export function getBadges(cookie: Pick<CookieLike, 'secure' | 'httpOnly' | 'session' | 'sameSite'>): string[] {
-  const badges: string[] = [];
-  if (cookie.secure) badges.push('S');
-  if (cookie.httpOnly) badges.push('H');
-  if (cookie.session) badges.push('Ses');
-  const ss = cookie.sameSite;
-  if (ss && ss !== 'unspecified') {
-    const label = ss === 'no_restriction' ? 'None' : ss.charAt(0).toUpperCase() + ss.slice(1);
-    badges.push(label);
+export interface Badge {
+  label: string;
+  kind: string;
+  title: string;
+}
+
+export function cookieBadges(cookie: Pick<CookieLike, 'secure' | 'httpOnly' | 'session' | 'sameSite' | 'partitionKey'>): Badge[] {
+  const badges: Badge[] = [];
+  if (cookie.secure) badges.push({ label: 'S', kind: 'secure', title: 'Secure — sent only over HTTPS' });
+  if (cookie.httpOnly) badges.push({ label: 'H', kind: 'httponly', title: 'HttpOnly — hidden from page JavaScript' });
+  if (cookie.session) badges.push({ label: 'Ses', kind: 'session', title: 'Session — removed when the browser closes' });
+  const ss = sameSiteLabel(cookie.sameSite);
+  if (ss) badges.push({ label: ss, kind: `samesite-${cookie.sameSite}`, title: `SameSite=${ss}` });
+  const pk = cookie.partitionKey;
+  if (pk?.topLevelSite) {
+    const where = pk.hasCrossSiteAncestor ? 'set by an embedded cross-site frame' : 'first-party';
+    badges.push({ label: 'P', kind: 'partitioned', title: `Partitioned (CHIPS) under ${pk.topLevelSite}, ${where}` });
   }
   return badges;
+}
+
+export function getBadges(cookie: Pick<CookieLike, 'secure' | 'httpOnly' | 'session' | 'sameSite' | 'partitionKey'>): string[] {
+  return cookieBadges(cookie).map((b) => b.label);
 }
 
 export function sameSiteLabel(value?: string | null): string | null {
   if (!value || value === 'unspecified') return null;
   return value === 'no_restriction' ? 'None' : value.charAt(0).toUpperCase() + value.slice(1);
-}
-
-export interface CookieSetDetails {
-  name: string;
-  value: string;
-  domain: string;
-  path?: string | null;
-  secure?: boolean;
-  httpOnly?: boolean;
-  sameSite?: string | null;
-  expirationDate?: number | null;
-  session?: boolean;
-}
-
-export function buildCookieData(details: CookieSetDetails) {
-  const protocol = details.secure ? 'https' : 'http';
-  const domain = details.domain.startsWith('.') ? details.domain.slice(1) : details.domain;
-  const url = `${protocol}://${domain}${details.path || '/'}`;
-
-  const cookieData: Record<string, unknown> = {
-    url,
-    name: details.name,
-    value: details.value,
-    domain: details.domain,
-    path: details.path || '/',
-    secure: !!details.secure,
-    httpOnly: !!details.httpOnly,
-    sameSite: details.sameSite || 'unspecified',
-  };
-
-  if (details.expirationDate && !details.session) {
-    cookieData.expirationDate = details.expirationDate;
-  }
-  return cookieData;
 }
 
 export const CAUSE_MAP: Record<string, string> = {
