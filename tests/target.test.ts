@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { parseTarget, noTargetReason, tabUpdateMovesTarget } from '../utils/target';
+import { parseTarget, noTargetReason, tabUpdateMovesTarget, siteAccessPattern } from '../utils/target';
+
+describe('siteAccessPattern', () => {
+  it('covers the whole site on any port and path, as Chrome match patterns do', () => {
+    expect(siteAccessPattern('https://app.example.com:8443/orders/42?tab=items')).toBe('https://app.example.com/*');
+    expect(siteAccessPattern('http://127.0.0.1:18780/')).toBe('http://127.0.0.1/*');
+    expect(siteAccessPattern('http://[::1]:3000/admin')).toBe('http://[::1]/*');
+  });
+});
 
 describe('tabUpdateMovesTarget', () => {
   it('refreshes on a new URL or a finished load, not on title, favicon or loading changes', () => {

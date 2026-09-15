@@ -21,7 +21,7 @@ import {
 import type { Chip, SortKey } from '@/utils/list';
 import { EXPORT_FORMATS, exportFormatLabel, formatExport, exportFilename } from '@/utils/export';
 import type { ExportFormat } from '@/utils/export';
-import { parseTarget, noTargetReason } from '@/utils/target';
+import { parseTarget, noTargetReason, siteAccessPattern } from '@/utils/target';
 import type { BlockRule, ProtectRule } from '@/utils/rules';
 import type {
   RemoveResult, WriteReport, UpdateResult, LoadProfileResult, ChangeEntry, CookiesResult, BlockResult,
@@ -55,6 +55,8 @@ let focusedRowId: string | null = null;
 let currentUrl = '';
 let currentDomain = '';
 let currentIsHttps = false;
+/** The user has limited this extension's site access in Chrome, and it does not include the current site. */
+let siteAccessWithheld = false;
 let allCookies: CookieLike[] = [];
 let shownCookies: CookieLike[] = [];
 let protectedIds = new Set<string>();
@@ -159,6 +161,10 @@ function setupLiveUpdates() {
     window.clearTimeout(refreshTimer);
     refreshTimer = window.setTimeout(() => { void loadCookies(); }, 300);
   });
+
+  // Site access changed: granted from the empty state, or changed in Chrome's extension menu.
+  browser.permissions.onAdded.addListener(() => { void loadCookies(); });
+  browser.permissions.onRemoved.addListener(() => { void loadCookies(); });
 
   let targetTimer: number | undefined;
   host.onTargetChanged?.(() => {
@@ -343,6 +349,12 @@ function setupListControls() {
     const action = (e.target as HTMLElement).closest<HTMLElement>('[data-empty]')?.dataset.empty;
     if (action === 'add') openEditor(null);
     else if (action === 'import') openImportDialog();
+    else if (action === 'allow-site') {
+      // Called straight from the click: permissions.request needs the user gesture.
+      void browser.permissions.request({ origins: [siteAccessPattern(currentUrl)] }).then((granted) => {
+        if (granted) void loadCookies();
+      });
+    }
     else if (action === 'clear-filters') {
       input('search').value = '';
       activeChips.clear();
@@ -371,21 +383,35 @@ async function loadCookies() {
   const domainInfo = el('domain-info');
   if (currentDomain) {
     domainInfo.textContent = currentDomain;
-    const response = await send<CookiesResult>({ action: 'getCookies', url: currentUrl });
+    const [response, access] = await Promise.all([
+      send<CookiesResult>({ action: 'getCookies', url: currentUrl }),
+      hasSiteAccess(currentUrl),
+    ]);
+    siteAccessWithheld = !access;
     allCookies = response.cookies || [];
     protectedIds = new Set(response.protectedIds || []);
     protectedHere = response.protected || [];
     blockedHere = response.blocked || [];
   } else {
     domainInfo.textContent = noTargetReason(rawTargetUrl).title;
+    siteAccessWithheld = false;
     allCookies = [];
     protectedIds = new Set();
     protectedHere = [];
     blockedHere = [];
   }
-  for (const id of ['btn-add', 'btn-export', 'btn-delete-all']) el<HTMLButtonElement>(id).disabled = !currentDomain;
+  for (const id of ['btn-add', 'btn-export', 'btn-delete-all']) el<HTMLButtonElement>(id).disabled = !currentDomain || siteAccessWithheld;
   renderCookies();
   renderRulesPill();
+}
+
+/** False only when Chrome says host access to this site is withheld; the browser then hides its cookies. */
+async function hasSiteAccess(url: string): Promise<boolean> {
+  try {
+    return await browser.permissions.contains({ origins: [siteAccessPattern(url)] });
+  } catch {
+    return true;
+  }
 }
 
 function renderChips(pool: CookieLike[]) {
@@ -525,6 +551,11 @@ function emptyStateHtml(): string {
   if (!currentDomain) {
     const reason = noTargetReason(rawTargetUrl);
     return `<h3>${escapeHtml(reason.title)}</h3><p>${escapeHtml(reason.detail)}</p>`;
+  }
+  if (siteAccessWithheld) {
+    return `<h3>${escapeHtml(t('emptyNoAccessTitle', currentDomain))}</h3>
+      <p>${escapeHtml(t('emptyNoAccessDetail'))}</p>
+      <div class="empty-actions"><button type="button" class="action-btn primary" data-empty="allow-site">${escapeHtml(t('emptyAllowSite', currentDomain))}</button></div>`;
   }
   if (allCookies.length) {
     return `<h3>${escapeHtml(t('emptyNoMatchTitle'))}</h3>

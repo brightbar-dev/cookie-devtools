@@ -387,6 +387,25 @@
   "emptyAddCookie": {
     "message": "+ Add cookie"
   },
+  "emptyNoAccessTitle": {
+    "message": "Cookie DevTools can’t read cookies on $SITE$",
+    "placeholders": {
+      "site": {
+        "content": "$1"
+      }
+    }
+  },
+  "emptyNoAccessDetail": {
+    "message": "Its site access in Chrome doesn’t include this site, so the browser hides this site’s cookies from it. Allow the site to see and edit them here."
+  },
+  "emptyAllowSite": {
+    "message": "Allow on $SITE$",
+    "placeholders": {
+      "site": {
+        "content": "$1"
+      }
+    }
+  },
   "targetNoPageTitle": {
     "message": "No page open"
   },

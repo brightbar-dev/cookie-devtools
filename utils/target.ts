@@ -21,6 +21,15 @@ export function parseTarget(raw: string | undefined | null): PageTarget | null {
   return { url: url.origin + url.pathname, host: url.hostname, https: url.protocol === 'https:' };
 }
 
+/**
+ * The match pattern for host access to a page's site: scheme and host, any port and path. Chrome lets a user
+ * withhold host access (Site access: "On click" or "On specific sites"); permissions.contains/request take this.
+ */
+export function siteAccessPattern(url: string): string {
+  const u = new URL(url);
+  return `${u.protocol}//${u.hostname}/*`;
+}
+
 /** Whether a tabs.onUpdated change can mean a different page: a new URL, or a load that finished. */
 export function tabUpdateMovesTarget(info: { url?: string; status?: string }): boolean {
   return !!info.url || info.status === 'complete';

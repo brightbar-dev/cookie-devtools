@@ -97,6 +97,7 @@ describe('no user-facing English outside messages.json', () => {
       .replace(/<(script|style)[\s\S]*?<\/\1>/g, ' ')
       .replace(/<[^>]+>/g, ' ')
       .replace(/&#?\w+;/g, ' ')
+      .replace(/__MSG_\w+__/g, ' ') // Chrome localizes these where WXT copies them into the manifest
       .trim();
   }
 
