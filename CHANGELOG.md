@@ -2,6 +2,27 @@
 
 All notable changes to Cookie DevTools will be documented in this file.
 
+## [0.5.0](https://github.com/brightbar-dev/cookie-devtools/compare/cookie-devtools-v0.4.0...cookie-devtools-v0.5.0) (2026-09-19)
+
+
+### Features
+
+* a Cookies panel in DevTools that follows the inspected page ([#18](https://github.com/brightbar-dev/cookie-devtools/issues/18)) ([e89e52c](https://github.com/brightbar-dev/cookie-devtools/commit/e89e52c253de92b4d4be414d8ee1119c61f93ecc))
+* import with preview, value inspector, sortable filterable list ([#11](https://github.com/brightbar-dev/cookie-devtools/issues/11)) ([8e2b649](https://github.com/brightbar-dev/cookie-devtools/commit/8e2b649f6d4175410ee184713d34df26145faa1d))
+* keyboard control, explained empty states, AA contrast ([#13](https://github.com/brightbar-dev/cookie-devtools/issues/13)) ([2c3fbd6](https://github.com/brightbar-dev/cookie-devtools/commit/2c3fbd6ab899d1c1f26eab769631d61bb755ad2f))
+* side panel, protect and block, live change feed ([#12](https://github.com/brightbar-dev/cookie-devtools/issues/12)) ([78315e0](https://github.com/brightbar-dev/cookie-devtools/commit/78315e0659cc886ceee9e5bf98f2deda050654dc))
+* UI strings through _locales/en/messages.json ([#19](https://github.com/brightbar-dev/cookie-devtools/issues/19)) ([1c59cd8](https://github.com/brightbar-dev/cookie-devtools/commit/1c59cd8b39f58f322d3c4c1616b2bd01220f63be))
+
+
+### Bug Fixes
+
+* drop the retired Tailwind CSS Lookup from the cross-promotion links ([#8](https://github.com/brightbar-dev/cookie-devtools/issues/8)) ([f25b87e](https://github.com/brightbar-dev/cookie-devtools/commit/f25b87e939396d53160ff640071d2d02fac88153))
+* explain withheld site access instead of an empty cookie list ([#20](https://github.com/brightbar-dev/cookie-devtools/issues/20)) ([e8afdaf](https://github.com/brightbar-dev/cookie-devtools/commit/e8afdaf5ee4e3a6556c0e9663ae93a90feaa795f))
+* make cookie writes safe and faithful ([#10](https://github.com/brightbar-dev/cookie-devtools/issues/10)) ([02163f0](https://github.com/brightbar-dev/cookie-devtools/commit/02163f0b1150cdb43586a453c27eccd674f408b0))
+* remove the last "no permission warnings" line from the README store copy ([#17](https://github.com/brightbar-dev/cookie-devtools/issues/17)) ([e2bde28](https://github.com/brightbar-dev/cookie-devtools/commit/e2bde28a45aa1925e1bd3638990ed0ac464ad331))
+* remove the last false "no install warnings" claim from the README listing copy ([#16](https://github.com/brightbar-dev/cookie-devtools/issues/16)) ([2c200d1](https://github.com/brightbar-dev/cookie-devtools/commit/2c200d1bea28e9890a7551d32aa274cfbe5f8cfd))
+* truthful install-warning claims on the listing, README and promo tiles ([#15](https://github.com/brightbar-dev/cookie-devtools/issues/15)) ([830c6f6](https://github.com/brightbar-dev/cookie-devtools/commit/830c6f6f18a41a8722ddce61fcca9e393c44491b))
+
 ## [0.4.0](https://github.com/brightbar-dev/cookie-devtools/compare/cookie-devtools-v0.3.0...cookie-devtools-v0.4.0) (2026-09-13)
 
 
