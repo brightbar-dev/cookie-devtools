@@ -75,5 +75,6 @@ npm test
 ## Conventions
 - WXT framework with vanilla TypeScript (no UI framework)
 - Version: semver, managed by release-please; the popup and options page read it from the manifest
+- Release: merging the release-please PR runs `.github/workflows/release.yml`, which builds both zips and calls `scripts/cws-publish.sh` (Chrome Web Store API v2, the only API that works after 2026-10-15; `CWS_AUTO_PUBLISH=false` uploads to the draft without submitting). `tests/cws-publish.test.mjs` runs that script against a stub `curl`, because nothing else exercises the release path before a release is cut. Change the script, run the test.
 - Requires `cookies`, `storage`, `activeTab` and `sidePanel` permissions and `<all_urls>` host permission. Chrome's install prompt shows one warning for that set, "Read and change all your data on all websites" (measured with `getPermissionWarningsByManifest` — see Key Implementation Details); `scripts/check-manifest.mjs` in CI fails if the set grows. `tabs` deliberately dropped 2026-08-26 — see `wxt.config.ts`
 - Do NOT add Claude/AI as co-author or contributor
