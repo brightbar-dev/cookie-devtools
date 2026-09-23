@@ -1286,16 +1286,16 @@
     "message": "More from Brightbar"
   },
   "promoJsonViewer": {
-    "message": "JSON Viewer Pro"
+    "message": "Brightbar JSON Viewer"
   },
   "promoJsonViewerTitle": {
-    "message": "JSON Viewer Pro — JSON tree viewer"
+    "message": "Brightbar JSON Viewer — JSON tree viewer"
   },
   "promoDevtoolsPro": {
-    "message": "DevTools Pro"
+    "message": "Brightbar DevTools"
   },
   "promoDevtoolsProTitle": {
-    "message": "DevTools Pro — 12 dev tools in one"
+    "message": "Brightbar DevTools — 13 dev tools in one"
   },
   "promoApiClient": {
     "message": "API Client"
