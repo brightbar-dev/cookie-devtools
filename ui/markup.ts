@@ -217,6 +217,8 @@ export const APP_MARKUP = `
       </div>
     </div>
 
+    <div id="review-nudge" class="review-nudge"></div>
+
     <footer>
       <span id="version" class="version"></span>
       <span class="kbd-hint" aria-hidden="true"><kbd>/</kbd> <span data-i18n="kbdSearch"></span> · <kbd>↑</kbd><kbd>↓</kbd> <span data-i18n="kbdMove"></span> · <kbd data-i18n="kbdEnter"></kbd> <span data-i18n="kbdEdit"></span> · <kbd data-i18n="kbdDel"></kbd> <span data-i18n="kbdDelete"></span></span>

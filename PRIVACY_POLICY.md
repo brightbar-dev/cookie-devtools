@@ -1,6 +1,6 @@
 # Privacy Policy — Cookie DevTools
 
-**Last updated:** 2026-09-15
+**Last updated:** 2026-09-24
 
 ## Data Collection
 Cookie DevTools does **not** collect, transmit, or share any user data. All data stays on your device.
@@ -17,6 +17,7 @@ Cookie DevTools does **not** collect, transmit, or share any user data. All data
 - The change monitor records nothing until you switch **Record** on in its tab. While it is on, each cookie change (name, value, domain, time) is kept in `chrome.storage.local` — for all sites, or only the one site you choose — up to the log size set in Settings. Clear it from the Monitor tab or Settings at any time.
 - Cookies you import are read from the text you paste or the file you choose, inside the extension; exports are copied to your clipboard or saved as a file on your device.
 - Protect and Block rules (the cookie's name and domain, and for a protected cookie its saved value and attributes) are stored locally so the extension can enforce them.
+- So that the popup asks for a store review at most once, and only after real use, a small counter is kept in `chrome.storage.local`: how many times a cookie action succeeded, on how many days, and whether you have answered the request. It holds no cookie names, values or sites.
 - No data is sent to any server or third party.
 
 ## Contact
