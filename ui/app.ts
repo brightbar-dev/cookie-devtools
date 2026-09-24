@@ -27,6 +27,7 @@ import type {
   RemoveResult, WriteReport, UpdateResult, LoadProfileResult, ChangeEntry, CookiesResult, BlockResult,
 } from '@/utils/messages';
 import { t, tp } from '@/utils/i18n';
+import { recordCookieWork, showReviewNudge } from '@/utils/review-nudge';
 import {
   el, input, send, localize, toast, describeWrite, confirmDialog, copyText, downloadText,
 } from './dom';
@@ -108,7 +109,7 @@ export async function mountApp(root: HTMLElement, appHost: AppHost) {
   setupImportDialog({
     url: () => currentUrl,
     existing: () => allCookies,
-    onApplied: () => { void loadCookies(); },
+    onApplied: () => { void loadCookies(); void recordCookieWork(); },
     // A file picker can close the popup; a tab keeps it.
     openInTab: host.mode === 'popup' ? () => {
       void browser.tabs.create({
@@ -119,6 +120,9 @@ export async function mountApp(root: HTMLElement, appHost: AppHost) {
   });
   await loadCookies();
   if (new URLSearchParams(location.search).get('view') === 'import') openImportDialog();
+  // The review request only in the toolbar popup, which opens between tasks; the side panel and
+  // DevTools panel stay open while someone works.
+  else if (host.mode === 'popup') await showReviewNudge(el('review-nudge'));
 }
 
 function applyTheme(theme: string) {
@@ -536,7 +540,9 @@ function renderCookies() {
     });
     item.querySelector('.btn-copy')!.addEventListener('click', async (e) => {
       e.stopPropagation();
-      toast(await copyText(cookie.value) ? t('toastCopied') : t('copyFailed'));
+      const copied = await copyText(cookie.value);
+      toast(copied ? t('toastCopied') : t('copyFailed'));
+      if (copied) void recordCookieWork();
     });
     item.querySelector('.btn-delete')!.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -582,6 +588,7 @@ async function deleteCookie(cookie: CookieLike) {
     actionLabel: t('actionUndo'),
     onAction: () => undoRemoval(res.removed),
   });
+  void recordCookieWork();
 }
 
 async function deleteSelected() {
@@ -597,6 +604,7 @@ async function deleteSelected() {
     ? t('toastDeletedPartial', res.removed.length, n, res.failed.length)
     : tp('toastDeletedCount', res.removed.length);
   toast(message, { actionLabel: t('actionUndo'), onAction: () => undoRemoval(res.removed) });
+  if (res.removed.length) void recordCookieWork();
 }
 
 async function undoRemoval(snapshot: CookieLike[]) {
@@ -630,6 +638,7 @@ function setupActions() {
       ? t('toastDeletedPartial', res.removed.length, n, res.failed.length)
       : tp('toastDeletedCount', res.removed.length);
     toast(message, { actionLabel: t('actionUndo'), onAction: () => undoRemoval(res.removed) });
+    if (res.removed.length) void recordCookieWork();
   });
 
   el('btn-theme').addEventListener('click', async () => {
@@ -943,6 +952,7 @@ async function saveEditor(e: Event) {
   else message = original ? t('toastCookieUpdated') : t('toastCookieAdded');
   toast(res.warning ?? message, { error: !!res.warning });
   loadCookies();
+  void recordCookieWork();
 }
 
 // Export menu
@@ -995,8 +1005,10 @@ function setupExportMenu() {
     if (button.dataset.action === 'download') {
       downloadText(exportFilename(format, currentDomain, new Date()), text, info.mime);
       toast(tp('toastDownloaded', cookies.length, exportFormatLabel(format)));
+      void recordCookieWork();
     } else if (await copyText(text)) {
       toast(tp('toastCopiedFormat', cookies.length, exportFormatLabel(format)));
+      void recordCookieWork();
     } else {
       toast(t('copyFailed'), { error: true });
     }
@@ -1143,6 +1155,7 @@ function setupProfiles() {
       url: currentUrl,
     });
     toast(tp('toastProfileSaved', response.count, name));
+    void recordCookieWork();
     input('profile-name').value = '';
     loadProfiles();
   });
@@ -1187,6 +1200,7 @@ async function loadProfiles() {
         return;
       }
       await loadCookies();
+      void recordCookieWork();
       toast(describeWrite(tp('writeLoaded', res.written.length, name), res), {
         actionLabel: t('actionUndo'),
         onAction: async () => {

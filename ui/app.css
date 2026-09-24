@@ -792,6 +792,25 @@ header h1 {
   color: var(--accent);
 }
 
+/* --- The one-time review request (utils/review-nudge.ts); empty unless it is showing --- */
+.review-nudge {
+  --bb-nudge-padding: 5px 14px;
+  --bb-nudge-font-size: 11px;
+  --bb-nudge-color: var(--text-secondary);
+  --bb-nudge-link: var(--accent);
+  --bb-nudge-border: var(--border);
+  flex-shrink: 0;
+}
+
+.review-nudge:empty {
+  display: none;
+}
+
+/* The package dims it to 70%, which drops secondary text below 4.5:1. */
+.review-nudge .bb-review-nudge-dismiss {
+  opacity: 1;
+}
+
 /* --- Footer --- */
 footer {
   display: flex;
