@@ -2,6 +2,13 @@
 
 All notable changes to Cookie DevTools will be documented in this file.
 
+## [0.6.0](https://github.com/brightbar-dev/cookie-devtools/compare/cookie-devtools-v0.5.0...cookie-devtools-v0.6.0) (2026-09-24)
+
+
+### Features
+
+* ask for a store review once, after real use, with a separate link for problems ([#29](https://github.com/brightbar-dev/cookie-devtools/issues/29)) ([1cd804e](https://github.com/brightbar-dev/cookie-devtools/commit/1cd804ed03f338bf5abb548b0fb8c91d61b73682))
+
 ## [0.5.0](https://github.com/brightbar-dev/cookie-devtools/compare/cookie-devtools-v0.4.0...cookie-devtools-v0.5.0) (2026-09-19)
 
 
