@@ -18,7 +18,7 @@ Built with [WXT](https://wxt.dev/) — builds for Chrome (MV3) and Firefox (MV2)
 - **utils/list.ts** — Sorting, filter chips, compact expiry, size totals. **utils/export.ts** — export text and filenames. **utils/messages.ts** — reply types shared by background and pages.
 - **ui/** — the shared UI: `app.ts` (tabs: Cookies, Monitor, Profiles; list with sort, chips, selection and sizes; editor with Protect/Block; import, rules and confirmation `<dialog>`s; undo toasts; export menu; live change feed), `markup.ts`, `app.css`, plus `dom.ts` (toast, confirm, copy, download), `inspector.ts`, `import-dialog.ts`.
 - **utils/rules.ts** — Protect/Block rules, `decideRuleAction` and `WriteGuard`. **utils/target.ts** — which page a surface works on.
-- **utils/review-nudge.ts** — The one-time store review request (`@brightbar-dev/review-nudge`, private on GitHub Packages; `.npmrc` + `NODE_AUTH_TOKEN` in CI). `ui/app.ts` calls `recordCookieWork()` where cookie work succeeds (copy, save, delete, export, import, profile save/load) on every surface, and mounts the request above the footer in the toolbar popup only — the side panel and DevTools panel stay open while someone works. The package owns the thresholds and the once-only rule. Never in the Firefox build. Strings are `reviewNudge*` in messages.json.
+- **utils/review-nudge.ts** — The one-time store review request (`@brightbar-dev/review-nudge`, private on GitHub Packages; `.npmrc` + `NODE_AUTH_TOKEN` in CI, a proxy-injected credential in cloud sessions — see Installing). `ui/app.ts` calls `recordCookieWork()` where cookie work succeeds (copy, save, delete, export, import, profile save/load) on every surface, and mounts the request above the footer in the toolbar popup only — the side panel and DevTools panel stay open while someone works. The package owns the thresholds and the once-only rule. Never in the Firefox build. Strings are `reviewNudge*` in messages.json.
 - **utils/i18n.ts** — `t(key, ...substitutions)` and `tp(key, count, ...)` (a `_one`/`_other` pair) over `browser.i18n`; keys are typed from `public/_locales/en/messages.json`. `ui/dom.ts` `localize(root)` fills `data-i18n`, `data-i18n-title`, `data-i18n-aria-label` and `data-i18n-placeholder`.
 - **public/_locales/** — every user-facing string is in `en/messages.json` (Chrome's placeholder format: `$NAME$` in the message, `{"name": {"content": "$1"}}`, count always `$1` in plural pairs). The other 19 locales translate only `appName` and `appDescription`; the rest falls back to English (`default_locale`).
 - **public/icon-{16,48,128}.png** — Extension icons.
@@ -44,6 +44,11 @@ Built with [WXT](https://wxt.dev/) — builds for Chrome (MV3) and Firefox (MV2)
 - Theme toggle with auto-detect via `prefers-color-scheme`
 - Uses `browser.*` API (WXT polyfill) for cross-browser compatibility
 - **No English in code or markup**: new UI text goes into `public/_locales/en/messages.json` and is read with `t()`/`tp()` or a `data-i18n*` attribute. Messages hold no HTML; escape `t()` output with `escapeHtml` in `innerHTML` templates (substitutions carry cookie names and domains). Don't call `t()` at module load. `tests/i18n.test.ts` enforces it.
+
+## Installing
+- **`npm ci` only.** `package-lock.json` pins every version and integrity hash; `@brightbar-dev/review-nudge` is pinned exactly (`0.1.0`) in `package.json` too. Never `npm install <pkg>` or `npm update` a `@brightbar-dev/*` package: moving it is a deliberate PR that changes `package.json` and the lock together.
+- `.npmrc` sends only the `@brightbar-dev` scope to `npm.pkg.github.com`; everything else comes from the public npm registry.
+- **Claude cloud sessions:** `.claude/hooks/cloud-install.sh` runs `npm ci` + `wxt prepare` at session start (`CLAUDE_CODE_REMOTE=true` only; locally it does nothing). The GitHub Packages token is an API credential the cloud environment's proxy attaches to `npm.pkg.github.com` requests. It is never in a file or an environment variable, so do not add an `_authToken` line to `.npmrc`.
 
 ## Commands
 ```bash
