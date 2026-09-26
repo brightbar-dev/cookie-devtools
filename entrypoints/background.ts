@@ -380,12 +380,20 @@ export default defineBackground(() => {
 
   // Profiles
 
+  /**
+   * Profiles keyed by the name the user typed, on a null-prototype object so a name like
+   * `__proto__` or `toString` is an ordinary own key. Storage keeps the same plain-object shape.
+   */
+  async function readProfiles<T>(): Promise<Record<string, T>> {
+    const data = await browser.storage.local.get({ profiles: {} });
+    return Object.assign(Object.create(null), data.profiles) as Record<string, T>;
+  }
+
   async function handleSaveProfile(msg: Message) {
     const name = msg.name as string;
     const url = msg.url as string | undefined;
     const cookies = url ? await getCookiesForUrl(url) : await browser.cookies.getAll({});
-    const data = await browser.storage.local.get({ profiles: {} });
-    const profiles = data.profiles as Record<string, unknown>;
+    const profiles = await readProfiles<unknown>();
     profiles[name] = {
       cookies,
       url: url || null,
@@ -399,9 +407,8 @@ export default defineBackground(() => {
   async function handleLoadProfile(msg: Message) {
     const name = msg.name as string;
     const clearFirst = msg.clearFirst as boolean;
-    const data = await browser.storage.local.get({ profiles: {} });
-    const profiles = data.profiles as Record<string, { cookies: CookieLike[]; url: string | null }>;
-    const profile = profiles[name];
+    const profiles = await readProfiles<{ cookies: CookieLike[]; url: string | null }>();
+    const profile = Object.hasOwn(profiles, name) ? profiles[name] : undefined;
 
     if (!profile) return { error: t('errorProfileNotFound') };
 
@@ -417,17 +424,15 @@ export default defineBackground(() => {
   }
 
   async function handleDeleteProfile(msg: Message) {
-    const data = await browser.storage.local.get({ profiles: {} });
-    const profiles = data.profiles as Record<string, unknown>;
+    const profiles = await readProfiles<unknown>();
     delete profiles[msg.name as string];
     await browser.storage.local.set({ profiles });
     return { success: true };
   }
 
   async function handleGetProfiles() {
-    const data = await browser.storage.local.get({ profiles: {} });
-    const profiles = data.profiles as Record<string, { savedAt: number; count: number; url: string | null }>;
-    const summary: Record<string, { savedAt: number; count: number; url: string | null }> = {};
+    const profiles = await readProfiles<{ savedAt: number; count: number; url: string | null }>();
+    const summary: Record<string, { savedAt: number; count: number; url: string | null }> = Object.create(null);
     for (const [name, profile] of Object.entries(profiles)) {
       summary[name] = {
         savedAt: profile.savedAt,
