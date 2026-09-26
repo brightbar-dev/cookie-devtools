@@ -4,6 +4,7 @@
   "description": "Developer-focused cookie manager with real-time monitoring, environment profiles, and export.",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@12.6.0",
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt --browser firefox",
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "typescript": "^7.0.2",
+    "vite": "^8.3.1",
     "vitest": "^5.0.2",
     "wxt": "^0.21.4"
   },

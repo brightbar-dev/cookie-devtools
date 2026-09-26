@@ -1,5 +1,5 @@
 // Captures the real extension UI on the Acme fixture at 2x, for the store screenshots.
-// Usage (from the repo root, after `npx wxt build`): node store/tools/capture.mjs [.output/chrome-mv3]
+// Usage (from the repo root, after `pnpm exec wxt build`): node store/tools/capture.mjs [.output/chrome-mv3]
 import fs from 'node:fs';
 import { startStoreFixture, STORE_PORT } from './fixture.mjs';
 
