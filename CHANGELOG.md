@@ -2,6 +2,13 @@
 
 All notable changes to Cookie DevTools will be documented in this file.
 
+## [0.6.1](https://github.com/brightbar-dev/cookie-devtools/compare/cookie-devtools-v0.6.0...cookie-devtools-v0.6.1) (2026-09-26)
+
+
+### Bug Fixes
+
+* **profiles:** profiles named __proto__, toString or constructor now save, list, load and delete like any other ([#33](https://github.com/brightbar-dev/cookie-devtools/issues/33)) ([ce27c33](https://github.com/brightbar-dev/cookie-devtools/commit/ce27c3371a7a400afeaa0bbbe57bd353f8f6cf65))
+
 ## [0.6.0](https://github.com/brightbar-dev/cookie-devtools/compare/cookie-devtools-v0.5.0...cookie-devtools-v0.6.0) (2026-09-24)
 
 
