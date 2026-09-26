@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { manifestProblems } from '../scripts/check-manifest.mjs';
 
-// What `npx wxt build` produces for Chrome today.
+// What `pnpm exec wxt build` produces for Chrome today.
 const BUILT = {
   manifest_version: 3,
   permissions: ['cookies', 'storage', 'activeTab', 'sidePanel'],

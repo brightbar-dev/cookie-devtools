@@ -46,25 +46,26 @@ Built with [WXT](https://wxt.dev/) — builds for Chrome (MV3) and Firefox (MV2)
 - **No English in code or markup**: new UI text goes into `public/_locales/en/messages.json` and is read with `t()`/`tp()` or a `data-i18n*` attribute. Messages hold no HTML; escape `t()` output with `escapeHtml` in `innerHTML` templates (substitutions carry cookie names and domains). Don't call `t()` at module load. `tests/i18n.test.ts` enforces it.
 
 ## Installing
-- **`npm ci` only.** `package-lock.json` pins every version and integrity hash; `@brightbar-dev/review-nudge` is pinned exactly (`0.1.0`) in `package.json` too. Never `npm install <pkg>` or `npm update` a `@brightbar-dev/*` package: moving it is a deliberate PR that changes `package.json` and the lock together.
+- **`pnpm install --frozen-lockfile` only.** `pnpm-lock.yaml` pins every version and integrity hash; `@brightbar-dev/review-nudge` is pinned exactly (`0.1.0`) in `package.json` too. Never `pnpm add <pkg>` or `pnpm update` a `@brightbar-dev/*` package: moving it is a deliberate PR that changes `package.json` and the lock together.
 - `.npmrc` sends only the `@brightbar-dev` scope to `npm.pkg.github.com`; everything else comes from the public npm registry.
-- **Claude cloud sessions:** `.claude/hooks/cloud-install.sh` runs `npm ci` + `wxt prepare` at session start (`CLAUDE_CODE_REMOTE=true` only; locally it does nothing). The GitHub Packages token is an API credential the cloud environment's proxy attaches to `npm.pkg.github.com` requests. It is never in a file or an environment variable, so do not add an `_authToken` line to `.npmrc`.
+- `pnpm-workspace.yaml` holds pnpm settings for this single-package repo: `allowBuilds` (only `esbuild` needs its postinstall) and `minimumReleaseAgeExclude` for `@brightbar-dev/*` so our own packages don't wait out pnpm's default one-day `minimumReleaseAge`.
+- **Claude cloud sessions:** `.claude/hooks/cloud-install.sh` runs `pnpm install --frozen-lockfile` + `wxt prepare` at session start (`CLAUDE_CODE_REMOTE=true` only; locally it does nothing). The GitHub Packages token is an API credential the cloud environment's proxy attaches to `npm.pkg.github.com` requests. It is never in a file or an environment variable, so do not add an `_authToken` line to `.npmrc`.
 
 ## Commands
 ```bash
-npm run dev          # Dev mode with HMR (Chrome)
-npm run dev:firefox  # Dev mode (Firefox)
-npm run build        # Production build (Chrome)
-npm run build:firefox # Production build (Firefox)
-npm run zip          # Build + zip for store submission
-npm run test         # Run Vitest tests
-npm run test:watch   # Watch mode
-npx tsc --noEmit     # Typecheck (CI runs it; wxt build does not check types)
+pnpm run dev          # Dev mode with HMR (Chrome)
+pnpm run dev:firefox  # Dev mode (Firefox)
+pnpm run build        # Production build (Chrome)
+pnpm run build:firefox # Production build (Firefox)
+pnpm run zip          # Build + zip for store submission
+pnpm run test         # Run Vitest tests
+pnpm run test:watch   # Watch mode
+pnpm exec tsc --noEmit # Typecheck (CI runs it; wxt build does not check types)
 ```
 
 ## Testing
 ```bash
-npm test
+pnpm test
 ```
 - Unit tests via Vitest + WXT testing plugin, in a Node environment (no DOM) — put logic in `utils/` and test it there
 - `tests/cookies.test.ts`: export formats, escaping, cookie URLs (incl. partitioned), datetime-local round trip, filtering, badges
