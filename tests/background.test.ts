@@ -357,12 +357,8 @@ describe('background: restore, import and profiles', () => {
     expect(await send({ action: 'loadProfile', name: 'Gone' })).toEqual({ error: t('errorProfileNotFound') });
   });
 
-  // BUG: profiles are a plain object keyed by the name the user types, so `profiles['__proto__'] = …`
-  // sets the object's prototype instead of adding a profile. saveProfile replies success (the popup
-  // toasts "Saved 1 cookie") but nothing reaches storage and the profile never appears. Names
-  // inherited from Object.prototype ('toString', 'constructor') also make loadProfile answer
-  // "cookies is not iterable" instead of errorProfileNotFound. A Map or Object.hasOwn check fixes both.
-  it.skip('saves and lists a profile whatever the user names it', async () => {
+  // Guards profile names that collide with Object.prototype ('__proto__', 'toString', 'constructor').
+  it('saves and lists a profile whatever the user names it', async () => {
     await start();
     await seed({ name: 'env' });
 
@@ -371,6 +367,30 @@ describe('background: restore, import and profiles', () => {
     const { profiles } = await send({ action: 'getProfiles' });
     expect(Object.keys(profiles)).toEqual(['__proto__']);
     expect(await send({ action: 'loadProfile', name: 'toString' })).toEqual({ error: t('errorProfileNotFound') });
+  });
+
+  it('loads and deletes a profile named after an Object.prototype key', async () => {
+    await start();
+    await seed({ name: 'env', value: 'staging' });
+    await send({ action: 'saveProfile', name: '__proto__', url: 'https://app.example.com/' });
+    await jar.api.remove({ url: 'https://app.example.com/', name: 'env' });
+
+    const loaded = await send({ action: 'loadProfile', name: '__proto__' });
+    expect(loaded.written.map((c: CookieLike) => c.name)).toEqual(['env']);
+    expect(await send({ action: 'loadProfile', name: 'constructor' })).toEqual({ error: t('errorProfileNotFound') });
+
+    await send({ action: 'deleteProfile', name: '__proto__' });
+    expect(Object.keys((await send({ action: 'getProfiles' })).profiles)).toEqual([]);
+    expect(await send({ action: 'loadProfile', name: '__proto__' })).toEqual({ error: t('errorProfileNotFound') });
+  });
+
+  it('still lists and loads profiles saved before the fix', async () => {
+    const cookie = { name: 'env', value: 'old', domain: 'app.example.com', hostOnly: true, path: '/', secure: true, httpOnly: false, sameSite: 'lax', session: true, storeId: '0' };
+    await start({ storage: { profiles: { Old: { cookies: [cookie], url: 'https://app.example.com/', savedAt: 1, count: 1 } } } });
+
+    expect((await send({ action: 'getProfiles' })).profiles).toEqual({ Old: { savedAt: 1, count: 1, url: 'https://app.example.com/' } });
+    const loaded = await send({ action: 'loadProfile', name: 'Old' });
+    expect(loaded.written.map((c: CookieLike) => c.name)).toEqual(['env']);
   });
 });
 
