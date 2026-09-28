@@ -2,6 +2,13 @@
 
 All notable changes to Cookie DevTools will be documented in this file.
 
+## [0.6.2](https://github.com/brightbar-dev/cookie-devtools/compare/cookie-devtools-v0.6.1...cookie-devtools-v0.6.2) (2026-09-28)
+
+
+### Bug Fixes
+
+* **deps:** review-nudge 0.1.1, so the nudge shows only once when two pages open together ([#37](https://github.com/brightbar-dev/cookie-devtools/issues/37)) ([9955717](https://github.com/brightbar-dev/cookie-devtools/commit/995571723f8cdd114ce5f9f47a4d0c6c60796a6c))
+
 ## [0.6.1](https://github.com/brightbar-dev/cookie-devtools/compare/cookie-devtools-v0.6.0...cookie-devtools-v0.6.1) (2026-09-26)
 
 
