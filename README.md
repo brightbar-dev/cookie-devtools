@@ -100,12 +100,12 @@ See [PRIVACY_POLICY.md](PRIVACY_POLICY.md) for detailed permission explanations.
 Cookie DevTools
 
 ### Short Description
-Developer cookie manager with real-time monitoring, environment profiles, and one-click export to curl. No tracking.
+Cookie editor for developers: edit, import and export (JSON, cookies.txt, curl), decode JWTs, protect cookies. Side panel. No ads.
 
 ### Detailed Description
 Cookie DevTools is a cookie editor and cookie manager built for developers. See, edit, import, export, decode and protect the cookies of the site you're working on — in the toolbar popup, in Chrome's side panel or in a DevTools panel.
 
-No ads. No tracking. Nothing you do here leaves your device.
+No ads. No tracking. Nothing you do here leaves your device. One request, once: after you have used it on a few different days, it asks whether you would leave a review, with a separate link for reporting a problem, and it never asks again.
 
 EDIT COOKIES SAFELY
 - Every cookie for the current site, including partitioned (CHIPS) cookies set by embedded frames
