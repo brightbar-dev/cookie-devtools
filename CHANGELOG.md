@@ -2,6 +2,13 @@
 
 All notable changes to Cookie DevTools will be documented in this file.
 
+## [0.7.0](https://github.com/brightbar-dev/cookie-devtools/compare/cookie-devtools-v0.6.2...cookie-devtools-v0.7.0) (2026-10-07)
+
+
+### Features
+
+* password-encrypted cookie export and import ([#42](https://github.com/brightbar-dev/cookie-devtools/issues/42)) ([5669c6e](https://github.com/brightbar-dev/cookie-devtools/commit/5669c6ea891257d856107765535bce264869d7ad))
+
 ## [0.6.2](https://github.com/brightbar-dev/cookie-devtools/compare/cookie-devtools-v0.6.1...cookie-devtools-v0.6.2) (2026-09-28)
 
 
