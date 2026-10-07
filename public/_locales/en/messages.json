@@ -3,7 +3,7 @@
     "message": "Cookie DevTools"
   },
   "appDescription": {
-    "message": "Developer cookie manager with real-time monitoring, environment profiles, and export to curl/wget. No tracking, no ads."
+    "message": "Cookie editor for developers: edit, import and export (JSON, cookies.txt, curl), decode JWTs, protect cookies. Side panel. No ads."
   },
   "localeCode": {
     "message": "en",
