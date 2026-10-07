@@ -895,7 +895,7 @@
     }
   },
   "importIntro": {
-    "message": "Paste, open or drop JSON (Cookie DevTools, Cookie-Editor, EditThisCookie, Playwright), a Netscape cookies.txt, a Cookie or Set-Cookie header, or a curl command. Nothing is written until you import."
+    "message": "Paste, open or drop JSON (Cookie DevTools, Cookie-Editor, EditThisCookie, Playwright), a Netscape cookies.txt, a Cookie or Set-Cookie header, a curl command, or a password-encrypted Cookie DevTools file. Nothing is written until you import."
   },
   "importTextLabel": {
     "message": "Cookies to import"
@@ -1733,5 +1733,77 @@
   "reviewNudgeDismiss": {
     "message": "Don’t ask again",
     "description": "One-time review request: button that hides it for good"
+  },
+  "exportFormatEncrypted": {
+    "message": "Encrypted file"
+  },
+  "shareExportButton": {
+    "message": "Encrypt…"
+  },
+  "shareExportTitle": {
+    "message": "Export encrypted"
+  },
+  "shareWarning": {
+    "message": "This file gives access to the session. Anyone who opens it can act as you on these sites until the session ends or you sign out. Send the password by a different route than the file, share it only with people you trust, and sign out afterwards if the session should stop working."
+  },
+  "sharePasswordLabel": {
+    "message": "Password"
+  },
+  "shareConfirmLabel": {
+    "message": "Confirm password"
+  },
+  "shareShowPassword": {
+    "message": "Show password"
+  },
+  "shareEncrypting": {
+    "message": "Encrypting…"
+  },
+  "shareDecrypting": {
+    "message": "Decrypting…"
+  },
+  "shareErrorEmpty": {
+    "message": "Enter a password."
+  },
+  "shareErrorShort": {
+    "message": "Use at least $MIN$ characters.",
+    "placeholders": {
+      "min": {
+        "content": "$1"
+      }
+    }
+  },
+  "shareErrorMismatch": {
+    "message": "The two passwords don’t match."
+  },
+  "shareErrorWrong": {
+    "message": "Wrong password, or the file has been changed. Nothing was imported."
+  },
+  "shareErrorVersion": {
+    "message": "This file uses encryption format version $VERSION$, which this version of Cookie DevTools can’t open. Update the extension and try again. Nothing was imported.",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "shareErrorMalformed": {
+    "message": "This encrypted file is damaged or incomplete. Nothing was imported."
+  },
+  "shareErrorFailed": {
+    "message": "Couldn’t encrypt: $REASON$",
+    "placeholders": {
+      "reason": {
+        "content": "$1"
+      }
+    }
+  },
+  "shareImportNote": {
+    "message": "This file is encrypted. Enter its password to see which cookies it contains; nothing is written until you import."
+  },
+  "shareDecrypt": {
+    "message": "Decrypt"
+  },
+  "shareImportDecrypted": {
+    "message": "Decrypted. These cookies give access to the session they came from; check the list before importing."
   }
 }

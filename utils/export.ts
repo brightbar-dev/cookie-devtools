@@ -18,12 +18,13 @@ export const EXPORT_FORMATS: ExportFormatInfo[] = [
   { id: 'header', mime: 'text/plain', suffix: '.header.txt' },
 ];
 
-export function exportFormatLabel(format: ExportFormat): string {
+export function exportFormatLabel(format: ExportFormat | 'encrypted'): string {
   switch (format) {
     case 'json': return t('exportFormatJson');
     case 'netscape': return t('exportFormatNetscape');
     case 'curl': return t('exportFormatCurl');
     case 'header': return t('exportFormatHeader');
+    case 'encrypted': return t('exportFormatEncrypted');
   }
 }
 
@@ -40,4 +41,10 @@ export function exportFilename(format: ExportFormat, host: string, date: Date): 
   const safeHost = (host || 'all-sites').replace(/[^a-z0-9.-]+/gi, '_');
   const info = EXPORT_FORMATS.find((f) => f.id === format)!;
   return `cookies-${safeHost}-${date.toISOString().slice(0, 10)}${info.suffix}`;
+}
+
+/** The file an encrypted export is saved as. */
+export function encryptedFilename(host: string, date: Date): string {
+  const safeHost = (host || 'all-sites').replace(/[^a-z0-9.-]+/gi, '_');
+  return `cookies-${safeHost}-${date.toISOString().slice(0, 10)}.cookies.enc.json`;
 }

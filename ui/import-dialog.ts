@@ -4,8 +4,10 @@ import type { ImportPlan } from '@/utils/importer';
 import { escapeHtml, domainAppliesToHost } from '@/utils/cookies';
 import type { CookieLike } from '@/utils/cookies';
 import type { WriteReport } from '@/utils/messages';
+import { parseShare, decryptShare, ShareError } from '@/utils/share';
+import type { EncryptedShare } from '@/utils/share';
 import { t, tp } from '@/utils/i18n';
-import { el, send } from './dom';
+import { el, input, send } from './dom';
 
 export interface ImportHost {
   /** The page cookies without a domain of their own are imported for. */
@@ -22,6 +24,9 @@ let host: ImportHost;
 let plan: ImportPlan | null = null;
 let applied = false;
 let debounce: number | undefined;
+/** Set while the pasted or opened text is one of our encrypted files that has not been decrypted yet. */
+let locked: EncryptedShare | null = null;
+let decrypting = false;
 
 const textArea = () => el<HTMLTextAreaElement>('import-text');
 const applyButton = () => el<HTMLButtonElement>('btn-import-apply');
@@ -60,6 +65,17 @@ export function setupImportDialog(importHost: ImportHost) {
   if (importHost.openInTab) tabButton.addEventListener('click', importHost.openInTab);
   else tabButton.hidden = true;
 
+  input('import-password-show').addEventListener('change', () => {
+    input('import-password').type = input('import-password-show').checked ? 'text' : 'password';
+  });
+  input('import-password').addEventListener('input', () => showPasswordError(''));
+  // Decrypted cookies and the password live only while the dialog is open.
+  dialog.addEventListener('close', () => {
+    locked = null;
+    plan = null;
+    clearPassword();
+  });
+
   el('btn-import-cancel').addEventListener('click', () => dialog.close());
   el('import-form').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -78,6 +94,29 @@ export function openImportDialog() {
   textArea().focus();
 }
 
+function clearPassword() {
+  input('import-password').value = '';
+  input('import-password').type = 'password';
+  input('import-password-show').checked = false;
+  showPasswordError('');
+}
+
+function showPasswordError(message: string) {
+  el('import-password-msg').textContent = message;
+  el('import-password-msg').classList.toggle('is-error', !!message);
+  if (message) input('import-password').setAttribute('aria-invalid', 'true');
+  else input('import-password').removeAttribute('aria-invalid');
+}
+
+function shareErrorMessage(err: unknown): string {
+  if (err instanceof ShareError) {
+    if (err.code === 'unsupported-version') return t('shareErrorVersion', err.version ?? 0);
+    if (err.code === 'wrong-password') return t('shareErrorWrong');
+    if (err.code === 'password-empty') return t('shareErrorEmpty');
+  }
+  return t('shareErrorMalformed');
+}
+
 async function loadFile(file: File) {
   if (file.size > MAX_FILE_BYTES) {
     el('import-preview').innerHTML = `<p class="import-error">${escapeHtml(t('importFileTooLarge', file.name))}</p>`;
@@ -86,6 +125,7 @@ async function loadFile(file: File) {
   textArea().value = await file.text();
   el('import-source').textContent = file.name;
   refresh();
+  if (locked) input('import-password').focus();
 }
 
 function flags(c: CookieLike): string {
@@ -99,11 +139,42 @@ function flags(c: CookieLike): string {
 
 function refresh() {
   applied = false;
-  const text = textArea().value;
+  locked = null;
+  plan = null;
+  clearPassword();
+  const raw = textArea().value;
+  const preview = el('import-preview');
+  const passwordRow = el('import-password-row');
+  passwordRow.hidden = true;
+
+  let share: EncryptedShare | null = null;
+  try {
+    share = parseShare(raw);
+  } catch (err) {
+    el('import-format').textContent = t('exportFormatEncrypted');
+    applyButton().disabled = true;
+    applyButton().textContent = t('actionImport');
+    preview.innerHTML = `<p class="import-error" role="alert">${escapeHtml(shareErrorMessage(err))}</p>`;
+    return;
+  }
+  if (share) {
+    locked = share;
+    el('import-format').textContent = t('exportFormatEncrypted');
+    passwordRow.hidden = false;
+    applyButton().disabled = false;
+    applyButton().textContent = t('shareDecrypt');
+    preview.innerHTML = '';
+    return;
+  }
+  renderPlan(raw);
+}
+
+/** Plan the cookies in plain text (typed, or decrypted) and show what importing will do. */
+function renderPlan(text: string, decrypted = false) {
   const url = host.url();
   plan = planImport(text, { url, nowSeconds: Date.now() / 1000 });
 
-  el('import-format').textContent = text.trim() ? formatLabel(plan.format) : '';
+  el('import-format').textContent = decrypted ? t('exportFormatEncrypted') : text.trim() ? formatLabel(plan.format) : '';
   const button = applyButton();
   button.disabled = plan.cookies.length === 0;
   button.textContent = plan.cookies.length ? tp('importApply', plan.cookies.length) : t('actionImport');
@@ -146,16 +217,54 @@ function refresh() {
       <span class="imp-detail">${escapeHtml(t('importSkippedReason', s.reason))}</span>
     </li>`).join('');
 
+  const decryptedNote = decrypted ? `<p class="import-note">${escapeHtml(t('shareImportDecrypted'))}</p>` : '';
   preview.innerHTML = `
     <p class="import-summary">${escapeHtml(summary.join(' · '))}</p>
-    ${note}
+    ${decryptedNote}${note}
     ${rows || skipped ? `<ul class="import-list">${rows}${skipped}</ul>` : ''}`;
+}
+
+/** Decrypts the opened file; only on success does the preview (and so the import) exist. */
+async function unlock(share: EncryptedShare) {
+  if (decrypting) return;
+  const password = input('import-password').value;
+  if (!password) {
+    showPasswordError(t('shareErrorEmpty'));
+    input('import-password').focus();
+    return;
+  }
+  const button = applyButton();
+  decrypting = true;
+  button.disabled = true;
+  button.textContent = t('shareDecrypting');
+  el('import-form').setAttribute('aria-busy', 'true');
+  try {
+    const text = await decryptShare(share, password);
+    locked = null;
+    el('import-password-row').hidden = true;
+    clearPassword();
+    renderPlan(text, true);
+    button.focus();
+  } catch (err) {
+    button.disabled = false;
+    button.textContent = t('shareDecrypt');
+    showPasswordError(shareErrorMessage(err));
+    input('import-password').focus();
+    input('import-password').select();
+  } finally {
+    decrypting = false;
+    el('import-form').removeAttribute('aria-busy');
+  }
 }
 
 async function apply() {
   const dialog = el<HTMLDialogElement>('import-dialog');
   if (applied) {
     dialog.close();
+    return;
+  }
+  if (locked) {
+    await unlock(locked);
     return;
   }
   if (!plan || plan.cookies.length === 0) return;

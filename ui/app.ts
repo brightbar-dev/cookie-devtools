@@ -33,6 +33,7 @@ import {
 } from './dom';
 import { renderInspector } from './inspector';
 import { setupImportDialog, openImportDialog } from './import-dialog';
+import { setupShareDialog, openShareDialog } from './share-dialog';
 import { APP_MARKUP } from './markup';
 import './app.css';
 
@@ -100,6 +101,11 @@ export async function mountApp(root: HTMLElement, appHost: AppHost) {
   setupActions();
   setupEditor();
   setupExportMenu();
+  setupShareDialog({
+    targets: exportTargets,
+    site: () => currentDomain,
+    onShared: () => { void recordCookieWork(); },
+  });
   setupMonitor();
   setupProfiles();
   setupRules();
@@ -977,7 +983,11 @@ function setupExportMenu() {
       <span>${escapeHtml(exportFormatLabel(f.id))}</span>
       <button type="button" data-format="${f.id}" data-action="copy">${escapeHtml(t('actionCopy'))}</button>
       <button type="button" data-format="${f.id}" data-action="download">${escapeHtml(t('actionDownload'))}</button>
-    </div>`).join('');
+    </div>`).join('') + `
+    <div class="export-row">
+      <span>${escapeHtml(exportFormatLabel('encrypted'))}</span>
+      <button type="button" data-action="encrypt">${escapeHtml(t('shareExportButton'))}</button>
+    </div>`;
 
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -993,6 +1003,12 @@ function setupExportMenu() {
   });
 
   menu.addEventListener('click', async (e) => {
+    const encrypt = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-action="encrypt"]');
+    if (encrypt) {
+      menu.style.display = 'none';
+      openShareDialog();
+      return;
+    }
     const button = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-format]');
     if (!button) {
       e.stopPropagation();
