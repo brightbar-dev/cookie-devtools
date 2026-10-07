@@ -1527,3 +1527,50 @@ input[type="checkbox"]:focus-visible,
 .profile-list:empty {
   display: none;
 }
+
+/* --- Encrypted share --- */
+.share-warning {
+  margin-bottom: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--warning);
+  border-left-width: 3px;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--warning-text);
+}
+
+.share-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 6px 0;
+  font-size: 12px;
+}
+
+.share-field[hidden] {
+  display: none;
+}
+
+.share-field input[type="password"],
+.share-field input[type="text"],
+.form-grid input[type="password"] {
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 12px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.share-field input:focus-visible,
+.form-grid input[type="password"]:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -1px;
+}
+
+.share-field [aria-invalid="true"],
+.form-grid input[type="password"][aria-invalid="true"] {
+  border-color: var(--danger);
+}

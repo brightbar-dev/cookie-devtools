@@ -53,6 +53,7 @@ Cookie editor and cookie manager for developers: edit safely, import from other 
 - **Cookie File**: curl/wget-compatible cookie file format, with HttpOnly marked (re-importable)
 - **curl command**: Ready-to-paste curl with -b flag, safely quoted (re-importable)
 - **Cookie header**: Raw header string for HTTP requests (re-importable)
+- **Encrypted file**: the same cookies sealed with a password you choose (PBKDF2-SHA256 + AES-256-GCM, WebCrypto only), for handing a session to someone. Import asks for the password and previews before writing; a wrong password or a changed file imports nothing. The file gives access to the session — send the password separately.
 
 ### Other
 - Dark mode (auto-detects system preference); colours meet WCAG AA in both themes, checked by a test

@@ -174,10 +174,43 @@ export const APP_MARKUP = `
           <span id="import-source" class="import-source"></span>
           <span id="import-format" class="import-format"></span>
         </div>
+        <div id="import-password-row" class="field share-field" hidden>
+          <p class="import-note" data-i18n="shareImportNote"></p>
+          <label for="import-password" data-i18n="sharePasswordLabel"></label>
+          <input type="password" id="import-password" autocomplete="off" spellcheck="false" aria-describedby="import-password-msg">
+          <label class="checkbox-label"><input type="checkbox" id="import-password-show"> <span data-i18n="shareShowPassword"></span></label>
+          <small class="field-msg" id="import-password-msg" role="alert"></small>
+        </div>
         <div id="import-preview" class="import-preview" aria-live="polite"></div>
         <div class="modal-actions">
           <button type="button" id="btn-import-cancel" class="action-btn" data-i18n="actionClose"></button>
           <button type="submit" id="btn-import-apply" class="action-btn primary" data-i18n="actionImport" disabled></button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Export encrypted -->
+    <dialog id="share-dialog" class="dialog" aria-labelledby="share-title" aria-describedby="share-warning">
+      <form id="share-form" class="dialog-body" novalidate>
+        <h2 id="share-title" data-i18n="shareExportTitle"></h2>
+        <p id="share-scope" class="dialog-sub"></p>
+        <p id="share-warning" class="share-warning" data-i18n="shareWarning"></p>
+        <div class="form-grid">
+          <div class="field">
+            <label for="share-password" data-i18n="sharePasswordLabel"></label>
+            <input type="password" id="share-password" autocomplete="new-password" spellcheck="false" aria-describedby="share-msg">
+          </div>
+          <div class="field">
+            <label for="share-confirm" data-i18n="shareConfirmLabel"></label>
+            <input type="password" id="share-confirm" autocomplete="new-password" spellcheck="false" aria-describedby="share-msg">
+          </div>
+          <label class="checkbox-label"><input type="checkbox" id="share-show"> <span data-i18n="shareShowPassword"></span></label>
+          <small class="field-msg is-error" id="share-msg" role="alert"></small>
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="btn-share-cancel" class="action-btn" data-i18n="actionCancel"></button>
+          <button type="button" id="btn-share-copy" class="action-btn" data-i18n="actionCopy"></button>
+          <button type="submit" id="btn-share-download" class="action-btn primary" data-i18n="actionDownload"></button>
         </div>
       </form>
     </dialog>
